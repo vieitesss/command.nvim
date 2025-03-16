@@ -15,10 +15,14 @@ M._update_command = function()
     COMMAND = vim.fn.input("Command to execute: ")
 end
 
+M._print_error = function(msg)
+    print("[ERROR] " .. msg)
+end
+
 M._exec_command = function()
     local buf = vim.api.nvim_create_buf(true, false)
     if buf == 0 then
-        print("Error creating the buffer")
+        M._print_error("Could not create the buffer")
         return
     end
 
@@ -32,7 +36,7 @@ M._exec_command = function()
         win = 0,
     })
     if win == 0 then
-        print("Error opening the window")
+        M._print_error("Could not open the window")
         return
     end
 
@@ -40,7 +44,7 @@ M._exec_command = function()
 
     local chan = vim.fn.termopen(cmd)
     if not chan or chan <= 0 then
-        print("Error al abrir el terminal")
+        M._print_error("Could not open the terminal")
         return
     end
 end
@@ -52,7 +56,7 @@ end
 
 M.exec_command_again = function ()
     if COMMAND == "" then
-        print("[ERROR] You have not executed a command before. Run `:ExecCommand`.")
+        M._print_error("You have not executed a command before. Run `:CommandExecute`")
         return
     end
     M._exec_command()

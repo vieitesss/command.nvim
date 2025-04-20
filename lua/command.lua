@@ -1,6 +1,7 @@
 local M = {}
 
 local COMMAND = ""
+local BUF = nil
 
 M.setup = function ()
     vim.api.nvim_create_user_command("CommandExecute", M.new_command, {})
@@ -20,8 +21,12 @@ M._print_error = function(msg)
 end
 
 M._exec_command = function()
-    local buf = vim.api.nvim_create_buf(true, false)
-    if buf == 0 then
+    if BUF ~= nil and vim.fn.bufexists(BUF) then
+        vim.api.nvim_buf_delete(BUF, { force = true })
+    end
+
+    BUF = vim.api.nvim_create_buf(true, false)
+    if BUF == 0 then
         M._print_error("Could not create the buffer")
         return
     end
@@ -29,7 +34,7 @@ M._exec_command = function()
     local width = tonumber(vim.api.nvim_command_output("echo &columns"))
     local height = math.floor(tonumber(vim.api.nvim_command_output("echo &lines")) * 0.25)
 
-    local win = vim.api.nvim_open_win(buf, true, {
+    local win = vim.api.nvim_open_win(BUF, true, {
         width = width,
         height = height,
         split = "below",

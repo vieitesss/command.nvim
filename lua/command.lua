@@ -1,9 +1,11 @@
 local M = {}
 
-local MODULE_NAME = "command"
+local MODULE_NAME = ...
 local COMMAND     = ""
 local BUF         = nil
 local ORIG_WIN    = nil
+
+local errors = require("error_table").error_table
 
 M.setup = function()
   vim.api.nvim_create_user_command("CommandExecute",  M.new_command, {})
@@ -18,17 +20,51 @@ M._update_command = function()
   COMMAND = vim.fn.input("Command to execute: ")
 end
 
-M._print_error = function(msg) print("[ERROR] " .. msg) end
+M._print_error = function(msg)
+  vim.api.nvim_err_writeln("[command] " .. msg)
+end
 
+--------------------------------------------------------------------------------
+-- PARSING
+--------------------------------------------------------------------------------
+M._parse_error_line = function(line)
+  for _, entry in pairs(errors) do
+    local match = vim.fn.matchlist(line, entry.regex)
+    if #match > 0 and match[1] ~= "" then
+      local file, lnum, col
+      for i = 2, #match do
+        local v = match[i]
+        if not file and v:match("[/\\]") or v:match("%.%w+$") then
+          file = v
+        elseif not lnum and v:match("^%d+$") then
+          lnum = tonumber(v)
+        elseif lnum and not col and v:match("^%d+$") then
+          col = tonumber(v) - 1
+        end
+      end
+      return file, lnum, col
+    end
+  end
+
+  local f, r, c = line:match("^([%w%./\\-_]+):(%d+):?(%d*)")
+  if f then
+    return f, tonumber(r), (c ~= "" and tonumber(c) or 1)
+  end
+
+  return nil, nil, nil
+end
+
+--------------------------------------------------------------------------------
+-- SALTO
+--------------------------------------------------------------------------------
 M._goto_file_at_cursor = function()
   local line = vim.api.nvim_get_current_line()
-  local fname, row, col = line:match("^([%w%./\\-_]+):(%d+):?(%d*)")
+  local fname, row, col = M._parse_error_line(line)
+
   if not fname then
-    M._print_error("No se encontró patrón file:line[:col].")
+    M._print_error("No se encontró patrón válido file:line[:col].")
     return
   end
-  row = tonumber(row)
-  col = tonumber(col ~= "" and col or 1)
 
   if ORIG_WIN and vim.api.nvim_win_is_valid(ORIG_WIN) then
     vim.api.nvim_set_current_win(ORIG_WIN)
@@ -36,12 +72,16 @@ M._goto_file_at_cursor = function()
     vim.cmd("vsplit")
   end
 
+  -- abre el fichero y posiciona cursor
   vim.cmd("edit " .. vim.fn.fnameescape(fname))
-  vim.api.nvim_win_set_cursor(0, { row, col })
+  vim.api.nvim_win_set_cursor(0, { row or 1, col or 1 })
 end
 
+--------------------------------------------------------------------------------
+-- TERMINAL
+--------------------------------------------------------------------------------
 M._exec_command = function()
-  ORIG_WIN = vim.api.nvim_get_current_win()   -- ★ guarda ventana de origen
+  ORIG_WIN = vim.api.nvim_get_current_win()
 
   if BUF and vim.fn.bufexists(BUF) == 1 then
     vim.api.nvim_buf_delete(BUF, { force = true })
@@ -49,7 +89,7 @@ M._exec_command = function()
 
   BUF = vim.api.nvim_create_buf(true, false)
   if BUF == 0 then
-    M._print_error("Could not create the buffer")
+    M._print_error("No se pudo crear el buffer de terminal.")
     return
   end
 
@@ -63,14 +103,12 @@ M._exec_command = function()
     win    = 0,
   })
   if win == 0 then
-    M._print_error("Could not open the window")
+    M._print_error("No se pudo abrir la ventana de terminal.")
     return
   end
 
   vim.api.nvim_buf_set_keymap(
-    BUF,
-    "n",
-    "<CR>",
+    BUF, "n", "<CR>",
     string.format('<cmd>lua require("%s")._goto_file_at_cursor()<CR>', MODULE_NAME),
     { noremap = true, silent = true }
   )
@@ -78,7 +116,7 @@ M._exec_command = function()
   local cmd  = { "/usr/bin/env", "bash", "-c", COMMAND }
   local chan = vim.fn.termopen(cmd)
   if not chan or chan <= 0 then
-    M._print_error("Could not open the terminal")
+    M._print_error("No se pudo lanzar la terminal.")
   end
 end
 
@@ -89,12 +127,13 @@ end
 
 M.exec_command_again = function()
   if COMMAND == "" then
-    M._print_error("You have not executed a command before. Run `:CommandExecute`")
+    M._print_error("No has ejecutado ningún comando aún. Usa `:CommandExecute` primero.")
     return
   end
   M._exec_command()
 end
 
 M.setup()
+
 return M
 

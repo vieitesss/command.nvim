@@ -10,10 +10,6 @@ local errors = require("error_table").error_table
 M.setup = function()
   vim.api.nvim_create_user_command("CommandExecute",  M.new_command, {})
   vim.api.nvim_create_user_command("CommandRexecute", M.exec_command_again, {})
-
-  local opts = { silent = true, noremap = true }
-  vim.api.nvim_set_keymap("n", "<space>co", "<cmd>CommandExecute<cr>",  opts)
-  vim.api.nvim_set_keymap("n", "<space>cr", "<cmd>CommandRexecute<cr>", opts)
 end
 
 M._update_command = function()

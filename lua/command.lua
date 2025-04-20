@@ -51,14 +51,14 @@ M._parse_error_line = function(line)
 end
 
 --------------------------------------------------------------------------------
--- SALTO
+-- GOTO
 --------------------------------------------------------------------------------
 M._goto_file_at_cursor = function()
   local line = vim.api.nvim_get_current_line()
   local fname, row, col = M._parse_error_line(line)
 
   if not fname then
-    M._print_error("No se encontró patrón válido file:line[:col].")
+    M._print_error("If this is an error, I could not find a valid pattern for it.")
     return
   end
 
@@ -85,7 +85,7 @@ M._exec_command = function()
 
   BUF = vim.api.nvim_create_buf(true, false)
   if BUF == 0 then
-    M._print_error("No se pudo crear el buffer de terminal.")
+    M._print_error("The terminal buffer could not be created.")
     return
   end
 
@@ -99,7 +99,7 @@ M._exec_command = function()
     win    = 0,
   })
   if win == 0 then
-    M._print_error("No se pudo abrir la ventana de terminal.")
+    M._print_error("The terminal window could not be opened.")
     return
   end
 
@@ -112,7 +112,7 @@ M._exec_command = function()
   local cmd  = { "/usr/bin/env", "bash", "-c", COMMAND }
   local chan = vim.fn.termopen(cmd)
   if not chan or chan <= 0 then
-    M._print_error("No se pudo lanzar la terminal.")
+    M._print_error("The terminal could not be launched.")
   end
 end
 
@@ -123,7 +123,7 @@ end
 
 M.exec_command_again = function()
   if COMMAND == "" then
-    M._print_error("No has ejecutado ningún comando aún. Usa `:CommandExecute` primero.")
+    M._print_error("Use first `:CommandExecute`")
     return
   end
   M._exec_command()

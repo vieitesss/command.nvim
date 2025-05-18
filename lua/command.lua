@@ -231,7 +231,8 @@ M._exec_command = function()
         { noremap = true, silent = true }
     )
 
-    local cmd = { "/usr/bin/env", "bash", "-c", COMMAND }
+    local shell = vim.env.SHELL or "/bin/sh"
+    local cmd = { shell, "-ic", COMMAND }
     vim.fn.termopen(cmd)
 end
 

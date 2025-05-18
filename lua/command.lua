@@ -129,7 +129,7 @@ M._update_command = function()
             set_cmd("")
         end
         vim.cmd("startinsert")
-    end,)
+    end, opts)
 
     -- Confirm or cancel
     vim.keymap.set({ 'i', 'n' }, '<CR>', function()
@@ -252,7 +252,6 @@ end
 --- Register commands and initialize history
 M.setup = function()
     load_history()
-    vim.print("history: ", M.history)
     vim.api.nvim_create_user_command("CommandExecute", M.new_command, {})
     vim.api.nvim_create_user_command("CommandRexecute", M.exec_command_again, {})
 end

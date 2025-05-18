@@ -3,6 +3,7 @@ local M = {}
 local errors = require('command.actions.error_table').error_table
 local hist = require 'command.history'
 
+M.on_command_enter
 --- Parse an error line for file, line, and column numbers
 --- @param line string The error output line
 --- @return (string|nil, number|nil, number|nil) filename, line number and column number
@@ -55,11 +56,11 @@ function M.follow_error_at_cursor(win)
     vim.api.nvim_win_set_cursor(0, { row or 1, col or 1 })
 end
 
---- Handle command confirmation: store, close prompt, then execute
+--- Closes the prompt window and returns the command to execute
 --- @param buf number Buffer handle of the prompt
 --- @param win number Window handle of the prompt
 --- @param history string[] Table with the session history
---- @return string The command to execute
+--- @return string
 function M.on_command_enter(buf, win, history)
     local line = vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] or ""
     local cmd = line:match("^%S+%s+(.*)$") or ""

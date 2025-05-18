@@ -11,7 +11,7 @@ end
 --- Execute the command in a terminal split and set up error navigation
 --- @param command string The command to execute
 function M.exec_command(command)
-    if not ui.new_win() then
+    if not ui.terminal_win() then
         utils.print_error("Could not create the window to show the command execution")
         return
     end

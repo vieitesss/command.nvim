@@ -1,24 +1,30 @@
 -- TODO:
--- - Window options.
--- - Use or not personal shell.
--- - Structure in more files.
+-- - Options.
+--   - Use or not personal shell.
+--   - Prompt
+--     - position
+--     - size
+--     - icon
 
 local actions = require 'command.actions'
 local utils = require 'command.utils'
 local hist = require 'command.history'
 local ui = require 'command.ui'
 
-local history = {} --- string[] List of commands executed
-local orig_win = nil --- int|nil The window before the command execution
-local command = "" --- string The command to execute
-local executed = false
+local history = {}     --- string[] List of commands executed
+local orig_win = nil   --- int|nil The window before the command execution
+local command = ""     --- string The command to execute
+local executed = false --- boolean If :CommandExecute was called before
 
 --- @type CommandExecute
 local M = {}
 
 function M.new_command()
     executed = true
-    ui.command_prompt(history)
+    local ok = ui.command_prompt(history)
+    if not ok then
+        utils.print_error("Could not create the prompt window")
+    end
 end
 
 function M.exec_command_again()

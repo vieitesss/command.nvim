@@ -4,10 +4,10 @@ local M = {
 }
 
 --- @return boolean true if the window was successfully created, false if not
-function M.new_win()
+function M.terminal_win()
     local orig_win = vim.api.nvim_get_current_win()
 
-    if M.term_buf and vim.fn.bufexists(term_buf) == 1 then
+    if M.term_buf and vim.fn.bufexists(M.term_buf) == 1 then
         vim.api.nvim_buf_delete(M.term_buf, { force = true })
     end
 
@@ -26,19 +26,14 @@ function M.new_win()
         return false
     end
 
-    vim.api.nvim_buf_set_keymap(M.term_buf, "n", "<CR>",
-        string.format(
-            '<cmd>lua require("command.actions").follow_error_at_cursor(%d)<CR>',
-            orig_win
-        ),
-        { noremap = true, silent = true }
-    )
+    -- Load terminal keymaps
+    require('command.keymaps.terminal')(buf, win)
 
     return true
 end
 
 --- @param history string[] The history of commands executed
---- @return (string, boolean) (command, window successfully created)
+--- @return boolean If the window successfully created
 function M.command_prompt(history)
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_option(buf, 'buftype', 'prompt')
@@ -63,16 +58,16 @@ function M.command_prompt(history)
     })
 
     if win == 0 then
-        return "", false
+        return false
     end
 
     vim.fn.prompt_setprompt(buf, " ")
     vim.cmd("startinsert")
 
     -- Load prompt keymaps
-    local command = require('command.keymaps.prompt')(buf, win, history)
+    require('command.keymaps.prompt')(buf, win, history)
 
-    return command, true
+    return true
 end
 
 return M

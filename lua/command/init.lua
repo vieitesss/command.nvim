@@ -1,4 +1,6 @@
 -- TODO:
+-- - Tests.
+--
 -- - Options.
 --   - Use or not personal shell.
 --   - Prompt
@@ -6,7 +8,6 @@
 --     - size
 --     - icon
 
-local actions = require 'command.actions'
 local utils = require 'command.utils'
 local hist = require 'command.history'
 local ui = require 'command.ui'

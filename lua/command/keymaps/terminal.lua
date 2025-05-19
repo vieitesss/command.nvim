@@ -1,4 +1,3 @@
-
 --- @param buf int The buffer the keymaps belongs to
 --- @param win int The terminal window
 function load_terminal_keys(buf, win)

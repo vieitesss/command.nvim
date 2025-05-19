@@ -27,7 +27,7 @@ function M.terminal_win()
     end
 
     -- Load terminal keymaps
-    require('command.keymaps.terminal')(buf, win)
+    require('command.keymaps.terminal')(M.term_buf, win)
 
     return true
 end

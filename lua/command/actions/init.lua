@@ -3,7 +3,6 @@ local M = {}
 local errors = require('command.actions.error_table').error_table
 local hist = require 'command.history'
 
-M.on_command_enter
 --- Parse an error line for file, line, and column numbers
 --- @param line string The error output line
 --- @return (string|nil, number|nil, number|nil) filename, line number and column number

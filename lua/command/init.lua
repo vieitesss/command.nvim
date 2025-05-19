@@ -12,8 +12,6 @@ local hist = require 'command.history'
 local ui = require 'command.ui'
 
 local history = {}     --- string[] List of commands executed
-local orig_win = nil   --- int|nil The window before the command execution
-local command = ""     --- string The command to execute
 local executed = false --- boolean If :CommandExecute was called before
 
 --- @type CommandExecute

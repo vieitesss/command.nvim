@@ -32,11 +32,12 @@ function load_prompt_keys(buf, win, history)
     -- Confirm or cancel
     vim.keymap.set({ 'i', 'n' }, '<CR>',
         function()
-            command = actions.on_command_enter(buf, win, history)
+            local command = actions.on_command_enter(buf, win, history)
             if command == "" then
                 utils.print_error("No command was provided")
             else
                 utils.exec_command(command)
+                require('command').executed = true
             end
         end, opts)
 

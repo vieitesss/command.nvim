@@ -12,14 +12,14 @@ local utils = require 'command.utils'
 local hist = require 'command.history'
 local ui = require 'command.ui'
 
-local history = {}     --- string[] List of commands executed
-local executed = false --- boolean If :CommandExecute was called before
-
 --- @type CommandExecute
-local M = {}
+local M = {
+    executed = false
+}
+
+local history = {} --- string[] List of commands executed
 
 function M.new_command()
-    executed = true
     local ok = ui.command_prompt(history)
     if not ok then
         utils.print_error("Could not create the prompt window")
@@ -27,7 +27,7 @@ function M.new_command()
 end
 
 function M.exec_command_again()
-    if not executed then
+    if not M.executed or #history == 0 then
         utils.print_error("Use first `:CommandExecute`")
         return
     end

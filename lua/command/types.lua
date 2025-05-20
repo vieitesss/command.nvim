@@ -1,4 +1,5 @@
 --- @class CommandExecute
+--- @field executed boolean If :ExecuteCommand was executed with a command
 --- @field new_command func Ask for a command and execute it
 --- @field exec_command_again func Re-execute the last executed command
 --- @field setup func The setup function

@@ -5,12 +5,12 @@ vim.fn.mkdir(vim.fn.stdpath('data') .. '/command.nvim', 'p')
 local hist_dir = vim.fn.stdpath('data') .. '/command.nvim'
 local hist_file = hist_dir .. '/command_history.txt'
 
---- @return string[]|nil
+--- @return string[]
 function M.get_history()
     if vim.fn.filereadable(hist_file) == 1 then
         return vim.fn.readfile(hist_file)
     end
-    return nil
+    return {}
 end
 
 --- @param history string[] The commands executed during the session

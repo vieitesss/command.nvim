@@ -1,7 +1,7 @@
 local actions = require 'command.actions'
 local utils = require 'command.utils'
 
---- @param history string[] The list of commands executed
+--- @param history string[]|nil The list of commands executed
 --- @return string The command to execute
 function load_prompt_keys(buf, win, history)
     local hist_len = #history

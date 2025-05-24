@@ -1,3 +1,4 @@
+--- @type Command.Actions
 local M = {}
 
 local errors = require('command.actions.error_table').error_table
@@ -56,20 +57,18 @@ function M.follow_error_at_cursor(win)
 end
 
 --- Closes the prompt window and returns the command to execute
---- @param buf number Buffer handle of the prompt
---- @param win number Window handle of the prompt
---- @param history string[] Table with the session history
+--- @param p Command.Prompt
 --- @return string
-function M.on_command_enter(buf, win, history)
-    local line = vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] or ""
+function M.on_command_enter(p)
+    local line = vim.api.nvim_buf_get_lines(p.buf, 0, 1, false)[1] or ""
     local cmd = line:match("^%S+%s+(.*)$") or ""
 
-    if cmd ~= "" and history[#history] ~= cmd then
-        table.insert(history, cmd)
-        hist.save_history(history)
+    if cmd ~= "" and p.history[#p.history] ~= cmd then
+        table.insert(p.history, cmd)
+        hist.save_history(p.history)
     end
 
-    M.on_command_cancel(buf, win)
+    M.on_command_cancel(p.buf, p.win)
 
     return cmd
 end

@@ -1,11 +1,11 @@
---- @type History
+--- @type Command.History
 local M = {}
 
 vim.fn.mkdir(vim.fn.stdpath('data') .. '/command.nvim', 'p')
 local hist_dir = vim.fn.stdpath('data') .. '/command.nvim'
 local hist_file = hist_dir .. '/command_history.txt'
 
---- @return string[]
+--- @return string[]|nil
 function M.get_history()
     if vim.fn.filereadable(hist_file) == 1 then
         return vim.fn.readfile(hist_file)

@@ -1,4 +1,4 @@
---- @type UI
+--- @type Command.UI
 local M = {
     term_buf = nil
 }
@@ -32,9 +32,8 @@ function M.terminal_win()
     return true
 end
 
---- @param history string[] The history of commands executed
---- @return boolean If the window successfully created
-function M.command_prompt(history)
+--- @return (int, int) (buffer, window)
+function M.command_prompt()
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_option(buf, 'buftype', 'prompt')
     vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
@@ -58,16 +57,13 @@ function M.command_prompt(history)
     })
 
     if win == 0 then
-        return false
+        return -1, -1
     end
 
     vim.fn.prompt_setprompt(buf, " ")
     vim.cmd("startinsert")
 
-    -- Load prompt keymaps
-    require('command.keymaps.prompt')(buf, win, history)
-
-    return true
+    return buf, win
 end
 
 return M

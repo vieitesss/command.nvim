@@ -16,6 +16,7 @@ Neovim plugin that allows you to:
 return {
     "vieitesss/command.nvim",
     lazy = true,
+    opts = true,
 }
 ```
 

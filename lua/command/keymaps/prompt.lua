@@ -80,7 +80,6 @@ function load_prompt_keys(opts)
     key.set(ni, '<C-f>', search, opts)
     key.set(ni, '<CR>', enter, opts)
     key.set(ni, '<C-d>', cancel, opts)
-    key.set('n', '<C-c>', cancel, opts)
     key.set('n', '<Esc>', cancel, opts)
 end
 

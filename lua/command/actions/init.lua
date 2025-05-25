@@ -60,8 +60,7 @@ end
 --- @param p Command.Prompt
 --- @return string
 function M.on_command_enter(p)
-    local line = vim.api.nvim_buf_get_lines(p.buf, 0, 1, false)[1] or ""
-    local cmd = line:match("^%S+%s+(.*)$") or ""
+    local cmd = vim.api.nvim_buf_get_lines(p.buf, 0, 1, false)[1] or ""
 
     if cmd ~= "" and p.history[#p.history] ~= cmd then
         table.insert(p.history, cmd)

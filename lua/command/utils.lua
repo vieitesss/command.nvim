@@ -25,6 +25,7 @@ end
 --- @param win int The prompt window
 --- @param command string The command to insert in the prompt
 function M.set_cmd_prompt(buf, win, command)
+    command = command:gsub("%s+", "")
     local prompt = " " .. command
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, { prompt })
     vim.api.nvim_win_set_cursor(win, { 1, #prompt + 1 })

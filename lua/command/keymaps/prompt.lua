@@ -37,8 +37,6 @@ local function search()
         complete = function(selected, opts, line, col)
             if selected and #selected > 0 then
                 local choice = selected[1]
-                local prefix = ' '
-                local newline = prefix .. choice
 
                 for i, v in ipairs(M.history) do
                     if v == choice then

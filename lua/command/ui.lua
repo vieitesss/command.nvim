@@ -35,7 +35,6 @@ end
 --- @return (int, int) (buffer, window)
 function M.command_prompt()
     local buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_option(buf, 'buftype', 'prompt')
     vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
     vim.api.nvim_buf_set_option(buf, 'swapfile', false)
 
@@ -60,7 +59,6 @@ function M.command_prompt()
         return -1, -1
     end
 
-    vim.fn.prompt_setprompt(buf, " ")
     vim.cmd("startinsert")
 
     return buf, win

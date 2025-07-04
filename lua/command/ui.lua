@@ -1,13 +1,13 @@
 --- @type Command.UI
 local M = {
-    term_buf = nil
+    term_buf = -1
 }
 
 --- @return boolean true if the window was successfully created, false if not
 function M.terminal_win()
-    local orig_win = vim.api.nvim_get_current_win()
+    local _ = vim.api.nvim_get_current_win()
 
-    if M.term_buf and vim.fn.bufexists(M.term_buf) == 1 then
+    if M.term_buf ~= -1 and vim.fn.bufexists(M.term_buf) == 1 then
         vim.api.nvim_buf_delete(M.term_buf, { force = true })
     end
 
@@ -32,7 +32,7 @@ function M.terminal_win()
     return true
 end
 
---- @return (int, int) (buffer, window)
+--- @return {buf: integer, win: integer}
 function M.command_prompt()
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
@@ -56,12 +56,12 @@ function M.command_prompt()
     })
 
     if win == 0 then
-        return -1, -1
+        return { buf = -1, win = -1 }
     end
 
     vim.cmd("startinsert")
 
-    return buf, win
+    return { buf = buf, win = win }
 end
 
 return M

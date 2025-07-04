@@ -34,7 +34,7 @@ local function search()
     require('fzf-lua').fzf_exec(M.history, {
         prompt   = 'History> ',
         winopts  = { height = 0.30, width = 0.50, row = 0.75, col = 0.50 },
-        complete = function(selected, opts, line, col)
+        complete = function(selected, _, line, col)
             if selected and #selected > 0 then
                 local choice = selected[1]
 
@@ -45,7 +45,7 @@ local function search()
                     end
                 end
 
-                return newline, #newline - 1
+                return line, #line - 1
             end
             return line, col
         end,
@@ -67,20 +67,20 @@ local function cancel()
 end
 
 --- @param opts Command.Prompt
---- @return string The command to execute
-function load_prompt_keys(opts)
+-- @return string The command to execute
+local function load_prompt_keys(opts)
     init(opts)
 
-    local opts = { buffer = true, noremap = true, silent = true }
+    local keyopts = { buffer = true, noremap = true, silent = true }
     local ni = { 'i', 'n' }
     local key = vim.keymap
 
-    key.set(ni, '<Up>', history_up, opts)
-    key.set(ni, '<Down>', history_down, opts)
-    key.set(ni, '<C-f>', search, opts)
-    key.set(ni, '<CR>', enter, opts)
-    key.set(ni, '<C-d>', cancel, opts)
-    key.set('n', '<Esc>', cancel, opts)
+    key.set(ni, '<Up>', history_up, keyopts)
+    key.set(ni, '<Down>', history_down, keyopts)
+    key.set(ni, '<C-f>', search, keyopts)
+    key.set(ni, '<CR>', enter, keyopts)
+    key.set(ni, '<C-d>', cancel, keyopts)
+    key.set('n', '<Esc>', cancel, keyopts)
 end
 
 return load_prompt_keys

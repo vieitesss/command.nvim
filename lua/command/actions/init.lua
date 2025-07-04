@@ -3,10 +3,11 @@ local M = {}
 
 local errors = require('command.actions.error_table').error_table
 local hist = require 'command.history'
+local utils = require 'command.utils'
 
 --- Parse an error line for file, line, and column numbers
 --- @param line string The error output line
---- @return (string|nil, number|nil, number|nil) filename, line number and column number
+--- @return {filename: string|nil, line: number|nil, col: number|nil}
 local function parse_error_line(line)
     for _, entry in pairs(errors) do
         local match = vim.fn.matchlist(line, entry.regex)
@@ -22,25 +23,25 @@ local function parse_error_line(line)
                     col = tonumber(v) - 1
                 end
             end
-            return file, lnum, col
+            return {filename = file, line = lnum, col = col}
         end
     end
 
     local f, r, c = line:match("^([%w%./\\-_]+):(%d+):?(%d*)")
     if f then
-        return f, tonumber(r), (c ~= "" and tonumber(c) or 1)
+        return { filename = f, line = tonumber(r), col = (c ~= "" and tonumber(c) or 1) }
     end
 
-    return nil, nil, nil
+    return {}
 end
 
 --- Jump to file and position under cursor based on error pattern
---- @param win int The window where the file will be opened
+--- @param win integer The window where the file will be opened
 function M.follow_error_at_cursor(win)
     local line = vim.api.nvim_get_current_line()
-    local fname, row, col = parse_error_line(line)
+    local info = parse_error_line(line)
 
-    if not fname then
+    if not info.filename then
         utils.print_error("If this is an error," ..
             "I could not find a valid pattern for it.")
         return
@@ -52,8 +53,8 @@ function M.follow_error_at_cursor(win)
         vim.cmd("vsplit")
     end
 
-    vim.cmd("edit " .. vim.fn.fnameescape(fname))
-    vim.api.nvim_win_set_cursor(0, { row or 1, col or 1 })
+    vim.cmd("edit " .. vim.fn.fnameescape(info.filename))
+    vim.api.nvim_win_set_cursor(0, { info.line or 1, info.col or 1 })
 end
 
 --- Closes the prompt window and returns the command to execute
@@ -73,8 +74,8 @@ function M.on_command_enter(p)
 end
 
 --- Cancel the prompt without executing
---- @param buf number Buffer handle of the prompt
---- @param win number Window handle of the prompt
+--- @param buf integer Buffer handle of the prompt
+--- @param win integer Window handle of the prompt
 function M.on_command_cancel(buf, win)
     if vim.api.nvim_win_is_valid(win) then
         vim.api.nvim_win_close(win, true)

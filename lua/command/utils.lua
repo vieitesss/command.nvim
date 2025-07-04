@@ -12,7 +12,7 @@ end
 --- @param command string The command to execute
 function M.exec_command(command)
     if not ui.terminal_win() then
-        utils.print_error("Could not create the window to show the command execution")
+        M.print_error("Could not create the window to show the command execution")
         return
     end
     -- local cmd = { "/usr/bin/env", "bash", "-c", command }
@@ -21,14 +21,12 @@ function M.exec_command(command)
     vim.fn.termopen(cmd)
 end
 
---- @param buf int The prompt buffer
---- @param win int The prompt window
+--- @param buf integer The prompt buffer
+--- @param win integer The prompt window
 --- @param command string The command to insert in the prompt
 function M.set_cmd_prompt(buf, win, command)
-    command = command:gsub("%s+", "")
-    local prompt = " " .. command
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { prompt })
-    vim.api.nvim_win_set_cursor(win, { 1, #prompt + 1 })
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { command })
+    vim.api.nvim_win_set_cursor(win, { 1, #command + 1 })
 end
 
 return M

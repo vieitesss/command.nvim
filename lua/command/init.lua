@@ -8,11 +8,13 @@
 --     - size
 --     - icon
 
-local hist = require 'command.history'
+local _ = require 'command.history'
 local commands = require 'command.commands'
 
 --- @type Command.Execute
-local M = {}
+local M = {
+    has_setup = true
+}
 
 function M.setup()
     commands.init()

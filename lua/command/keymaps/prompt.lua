@@ -36,16 +36,8 @@ local function search()
         winopts  = { height = 0.30, width = 0.50, row = 0.75, col = 0.50 },
         complete = function(selected, _, line, col)
             if selected and #selected > 0 then
-                local choice = selected[1]
-
-                for i, v in ipairs(M.history) do
-                    if v == choice then
-                        M.hist_idx = i
-                        break
-                    end
-                end
-
-                return line, #line - 1
+                local command = selected[1]
+                return command, #command - 1
             end
             return line, col
         end,

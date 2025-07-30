@@ -8,18 +8,18 @@
 --     - size
 --     - icon
 
-local _ = require 'command.history'
-local commands = require 'command.commands'
+local api = require 'command.api'
+local config = require 'command.config'
+local history = require 'command.history'
+local ui = require 'command.ui'
 
---- @type Command.Execute
-local M = {
-    has_setup = true
-}
+local M = vim.tbl_extend("keep", {}, api)
 
-function M.setup()
-    commands.init()
+function M.setup(opts)
+    config.setup(opts or {}) -- Populate 'config.values'
+
+    history.setup(config.values.history)
+    ui.setup(config.values.ui)
 end
-
-M.setup()
 
 return M

@@ -6,7 +6,7 @@ local state = require 'command.state'
 local actions = require 'command.actions'
 
 -- Displays a prompt to execute a new command.
-function M.run()
+function M.execute()
     state.set_main_win(vim.api.nvim_get_current_win())
 
     local ok = ui.show_prompt()
@@ -21,7 +21,7 @@ function M.run()
 end
 
 -- Executes the last executed command.
-function M.repeat_last()
+function M.execute_last()
     state.set_main_win(vim.api.nvim_get_current_win())
 
     if not state._has_run or #state.history_list() == 0 then

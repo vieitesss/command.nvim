@@ -1,13 +1,20 @@
---- @param buf integer The buffer the keymaps belongs to
---- @param win integer The terminal window
-local function load_terminal_keys(buf, win)
-    vim.api.nvim_buf_set_keymap(buf, "n", "<CR>",
-        string.format(
-            '<cmd>lua require("command.actions").follow_error_at_cursor(%d)<CR>',
-            win
-        ),
-        { noremap = true, silent = true }
-    )
+local state = require 'command.state'
+local config = require 'command.config'
+local km = require 'command.ui.keymaps'
+
+local M = {}
+
+local WINDOW_NAME = "terminal"
+
+function M.apply()
+    local window = state.get_window_by_name(WINDOW_NAME)
+    if not window then
+        return
+    end
+
+    local n = km.include_mode({ "n" }, vim.deepcopy(config.values.keymaps.terminal.n))
+
+    km.apply(window.buf, n)
 end
 
-return load_terminal_keys
+return M

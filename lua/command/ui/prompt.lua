@@ -1,13 +1,13 @@
-local config = require 'command.config'
-
-local M = {
-    _max_width = config.values.ui.prompt.max_width
-}
+local M = {}
 
 local COMMAND_WIN_HEIGHT = 1
 
+function M.setup(opts)
+    M._max_width = opts.max_width
+end
+
 function M.create()
-    local buf = vim.api.nvim_create_buf(false, true)
+    local buf = vim.api.nvim_create_buf(true, true)
     vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = buf })
     vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
 

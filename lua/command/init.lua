@@ -10,15 +10,16 @@
 
 local api = require 'command.api'
 local config = require 'command.config'
-local state = require 'command.state'
 local history = require 'command.history'
+local ui = require 'command.ui'
 
 local M = vim.tbl_extend("keep", {}, api)
 
 function M.setup(opts)
-    config.setup(opts or {})
-    state.setup()
+    config.setup(opts or {}) -- Populate 'config.values'
+
     history.setup(config.values.history)
+    ui.setup(config.values.ui)
 end
 
 return M

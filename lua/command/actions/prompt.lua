@@ -1,13 +1,17 @@
 local utils = require 'command.utils'
 local hist = require 'command.history'
 local state = require 'command.state'
+local actions = require 'command.actions'
 
 local M = {}
 
-local BORDERS = 2
-local SEARCH_HEADER = 3
 local WINDOW_NAME = "prompt"
 local ERROR_COMMAND_NOT_PROVIDED = "No command was provided"
+
+function M.setup(picker)
+    M._picker = picker
+end
+
 
 function M.history_up()
     local window = state.get_window_by_name(WINDOW_NAME)
@@ -41,35 +45,7 @@ function M.history_down()
 end
 
 function M.search()
-    local windows = require('command.ui').windows()
-
-    local command_win
-    for _, value in ipairs(windows) do
-        if value.name == WINDOW_NAME then
-            command_win = value
-            break
-        end
-    end
-
-    local max_lines = vim.o.lines
-    local max_columns = vim.o.columns
-
-    local height = 0.30
-    local width = command_win.width
-    local row = (command_win.row + command_win.height + BORDERS * 2 + SEARCH_HEADER + height / 2 * max_lines) / max_lines
-    local col = (command_win.col + BORDERS + width / 2) / max_columns
-
-    require('fzf-lua').fzf_exec(M.history, {
-        prompt   = 'History> ',
-        winopts  = { height = height, width = width, row = row, col = col },
-        complete = function(selected, _, line, column)
-            if selected and #selected > 0 then
-                local command = selected[1]
-                return command, #command - 1
-            end
-            return line, column
-        end,
-    })
+    require('command.ui.picker').pick(hist._picker)
 end
 
 function M.enter()
@@ -90,9 +66,11 @@ function M.enter()
     if cmd == "" then
         utils.print_error(ERROR_COMMAND_NOT_PROVIDED)
     else
-        utils.exec_command(cmd)
-        require('command.state')._has_run = true
+        actions.exec_command(cmd)
+        state._has_run = true
     end
+
+    state.reset_history_index()
 end
 
 function M.cancel()
@@ -109,6 +87,8 @@ function M.cancel()
     if vim.api.nvim_buf_is_valid(buf) then
         vim.api.nvim_buf_delete(buf, { force = true })
     end
+
+    state.reset_history_index()
 end
 
 return M

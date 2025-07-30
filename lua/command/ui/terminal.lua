@@ -1,10 +1,11 @@
-local config = require 'command.config'
-
 local M = {
     _term_buf = -1,
-    _height = config.ui.terminal.height,
-    _split = config.ui.terminal.split
 }
+
+function M.setup(opts)
+    M._height = opts.height
+    M._split = opts.split
+end
 
 function M.create()
     local _ = vim.api.nvim_get_current_win()
@@ -16,6 +17,7 @@ function M.create()
     M._term_buf = vim.api.nvim_create_buf(true, false)
 
     return {
+        name = "terminal",
         buf = M._term_buf,
         opts = {
             width = vim.o.columns,

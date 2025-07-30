@@ -1,10 +1,12 @@
 local prompt_act = require 'command.actions.prompt'
+local terminal_act = require 'command.actions.terminal'
 
 local M = {}
 
 local defaults = {
     history = {
-        max = 200
+        max = 200,
+        picker = "fzf-lua"
     },
     ui = {
         prompt = {
@@ -26,6 +28,11 @@ local defaults = {
             },
             n = {
                 { '<Esc>', prompt_act.cancel }
+            }
+        },
+        terminal = {
+            n = {
+                { '<CR>', terminal_act.follow_error }
             }
         }
     }

@@ -146,4 +146,4 @@ M.error_table = {
     },
 }
 
-return M
+return M.error_table

@@ -1,8 +1,12 @@
 local hts = require 'command.ui.highlights'
 local state = require 'command.state'
 
-local M = {
-}
+local M = {}
+
+function M.setup(opts)
+    require('command.ui.prompt').setup(opts.prompt)
+    require('command.ui.terminal').setup(opts.terminal)
+end
 
 --- @return boolean -- if the window was created
 local function show(opts)
@@ -11,6 +15,13 @@ local function show(opts)
     if win == 0 then
         return false
     end
+
+    vim.api.nvim_create_autocmd('BufDelete', {
+        buffer = opts.buf,
+        callback = function()
+            state.remove_window(opts.name)
+        end
+    })
 
     opts.win = win
 
@@ -21,10 +32,11 @@ local function show(opts)
     return true
 end
 
--- function M.show_terminal()
---     local opts = require('command.ui.terminal').create()
---     return show(opts)
--- end
+function M.show_terminal()
+    local opts = require('command.ui.terminal').create()
+
+    return show(opts)
+end
 
 
 function M.show_prompt()

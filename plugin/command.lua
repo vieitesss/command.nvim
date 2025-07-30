@@ -5,9 +5,9 @@ if not ok then
 end
 
 vim.api.nvim_create_user_command("CommandExecute", function()
-    command.run()
+    command.execute()
 end, {})
 
-vim.api.nvim_create_user_command("CommandRexecute", function()
-    command.repeat_last()
+vim.api.nvim_create_user_command("CommandExecuteLast", function()
+    command.execute_last()
 end, {})

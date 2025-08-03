@@ -7,6 +7,11 @@ local actions = require 'command.actions'
 
 -- Displays a prompt to execute a new command.
 function M.execute()
+    local win = state.get_window_by_name('prompt')
+    if win then
+        return
+    end
+
     state.set_main_win(vim.api.nvim_get_current_win())
 
     local ok = ui.show_prompt()

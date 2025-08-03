@@ -13,10 +13,10 @@ function M.create()
     local win = require('command.state').get_window_by_name(WINDOW_NAME)
 
     if win then
-        vim.api.nvim_buf_delete(win.buf, { force = true })
+        require('command.state').remove_window(WINDOW_NAME)
     end
 
-    local buf = vim.api.nvim_create_buf(true, true)
+    local buf = vim.api.nvim_create_buf(true, false)
 
     return {
         name = 'terminal',

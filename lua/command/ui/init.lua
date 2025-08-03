@@ -6,6 +6,7 @@ local M = {}
 local AUGROUP = 'CommandAutocmd'
 
 function M.setup(opts)
+    vim.api.nvim_create_augroup(AUGROUP, {})
     require('command.ui.prompt').setup(opts.prompt)
     require('command.ui.terminal').setup(opts.terminal)
 end
@@ -17,8 +18,6 @@ local function show(opts)
     if win == 0 then
         return false
     end
-
-    vim.api.nvim_create_augroup(AUGROUP, {})
 
     vim.api.nvim_create_autocmd('WinClosed', {
         group = AUGROUP,

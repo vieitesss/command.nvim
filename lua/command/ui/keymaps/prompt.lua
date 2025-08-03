@@ -1,6 +1,7 @@
 local config = require 'command.config'
 local state = require 'command.state'
 local km = require 'command.ui.keymaps'
+local errors = require 'command.errors'
 
 local M = {}
 
@@ -9,6 +10,7 @@ local WINDOW_NAME = "prompt"
 function M.apply()
     local window = state.get_window_by_name(WINDOW_NAME)
     if not window then
+        errors.WINDOW_NOT_FOUND('apply', WINDOW_NAME)
         return
     end
 

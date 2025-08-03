@@ -22,4 +22,6 @@ function M.setup(opts)
     ui.setup(config.values.ui)
 end
 
+M.setup()
+
 return M

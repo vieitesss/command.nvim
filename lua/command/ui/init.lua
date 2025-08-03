@@ -3,6 +3,8 @@ local state = require 'command.state'
 
 local M = {}
 
+local AUGROUP = 'CommandAutocmd'
+
 function M.setup(opts)
     require('command.ui.prompt').setup(opts.prompt)
     require('command.ui.terminal').setup(opts.terminal)
@@ -16,7 +18,10 @@ local function show(opts)
         return false
     end
 
-    vim.api.nvim_create_autocmd('BufDelete', {
+    vim.api.nvim_create_augroup(AUGROUP, {})
+
+    vim.api.nvim_create_autocmd('WinClosed', {
+        group = AUGROUP,
         buffer = opts.buf,
         callback = function()
             state.remove_window(opts.name)

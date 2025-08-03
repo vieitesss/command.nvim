@@ -36,7 +36,6 @@ function M.get_window_by_name(name)
         end
     end
 
-    utils.print_error("Could not find a window with the name: " .. name)
     return nil
 end
 
@@ -46,17 +45,21 @@ end
 
 function M.remove_window(name)
     local idx = 0
+    local win = nil
     for index, window in ipairs(M._windows) do
         if window.name == name then
             idx = index
+            win = window
             break
         end
     end
 
-    if idx == 0 then
+    if idx == 0 or not win then
         utils.print_error("Could not remove a window with the name: " .. name)
         return
     end
+
+    vim.api.nvim_buf_delete(win.buf, { force = true })
 
     table.remove(M._windows, idx)
 end

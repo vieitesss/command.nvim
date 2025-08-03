@@ -1,6 +1,6 @@
-local M = {
-    _term_buf = -1,
-}
+local M = {}
+
+local WINDOW_NAME = 'terminal'
 
 function M.setup(opts)
     M._height = opts.height
@@ -10,15 +10,17 @@ end
 function M.create()
     local _ = vim.api.nvim_get_current_win()
 
-    if M._term_buf ~= -1 and vim.fn.bufexists(M._term_buf) == 1 then
-        vim.api.nvim_buf_delete(M._term_buf, { force = true })
+    local win = require('command.state').get_window_by_name(WINDOW_NAME)
+
+    if win then
+        vim.api.nvim_buf_delete(win.buf, { force = true })
     end
 
-    M._term_buf = vim.api.nvim_create_buf(true, false)
+    local buf = vim.api.nvim_create_buf(true, true)
 
     return {
-        name = "terminal",
-        buf = M._term_buf,
+        name = 'terminal',
+        buf = buf,
         opts = {
             width = vim.o.columns,
             height = math.floor(vim.o.lines * M._height),

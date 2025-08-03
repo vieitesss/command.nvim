@@ -1,10 +1,12 @@
 local state = require 'command.state'
+local errors = require 'command.errors'
 
 local M = {}
 
 function M.pick()
     local window = state.get_window_by_name(REFERENCE_WINDOW)
     if not window then
+        errors.WINDOW_NOT_FOUND('apply', REFERENCE_WINDOW)
         return
     end
 

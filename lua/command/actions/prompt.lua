@@ -2,6 +2,7 @@ local utils = require 'command.utils'
 local hist = require 'command.history'
 local state = require 'command.state'
 local actions = require 'command.actions'
+local errors = require 'command.errors'
 
 local M = {}
 
@@ -16,6 +17,7 @@ end
 function M.history_up()
     local window = state.get_window_by_name(WINDOW_NAME)
     if not window then
+        errors.WINDOW_NOT_FOUND('history_up', WINDOW_NAME)
         return
     end
 
@@ -29,6 +31,7 @@ end
 function M.history_down()
     local window = state.get_window_by_name(WINDOW_NAME)
     if not window then
+        errors.WINDOW_NOT_FOUND('history_down', WINDOW_NAME)
         return
     end
 
@@ -51,6 +54,7 @@ end
 function M.enter()
     local window = state.get_window_by_name(WINDOW_NAME)
     if not window then
+        errors.WINDOW_NOT_FOUND('enter', WINDOW_NAME)
         return
     end
 
@@ -76,6 +80,7 @@ end
 function M.cancel()
     local window = state.get_window_by_name(WINDOW_NAME)
     if not window then
+        errors.WINDOW_NOT_FOUND('cancel', WINDOW_NAME)
         return
     end
 

@@ -7,7 +7,8 @@ function M.setup(opts)
     M._max = opts.max
     M._picker = opts.picker
 
-    state.setup_history(M.load())
+    local list = M.load()
+    state.setup_history(list)
 end
 
 function M.load()

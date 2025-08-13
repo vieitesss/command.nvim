@@ -9,7 +9,7 @@ Helpers.expect.greater = MiniTest.new_expectation(
     function(a, b) return string.format('Left: %s, Right: %s; %s > %s', a, b, a, b) end
 )
 
--- Wrapp new_child_neovim
+-- Wrap new_child_neovim
 Helpers.new_child_neovim = function()
     local child = MiniTest.new_child_neovim()
 

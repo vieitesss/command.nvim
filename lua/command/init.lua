@@ -20,6 +20,8 @@ function M.setup(opts)
 
     history.setup(config.values.history)
     ui.setup(config.values.ui)
+
+    return M
 end
 
 return M

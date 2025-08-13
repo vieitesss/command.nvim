@@ -3,7 +3,7 @@ local M = {}
 local COMMAND_WIN_HEIGHT = 1
 
 function M.setup(opts)
-    M._max_width = opts.max_width
+    M._max_width = opts.max_width or 40
 end
 
 function M.create()

@@ -9,24 +9,70 @@ Neovim plugin that allows you to:
 
 # Installation
 
+## vim.pack
+
+```lua
+vim.pack.add({
+    { src = "https://github.com/vieitesss/command.nvim" }
+})
+
+require('command').setup()
+```
+
 ## lazy.nvim
 
 ```lua
 
 return {
     "vieitesss/command.nvim",
-    lazy = true,
+    lazy = false,
     opts = true,
+}
+```
+
+# Configuration
+
+```lua
+local prompt_act = require 'command.actions.prompt'
+local terminal_act = require 'command.actions.terminal'
+defaults = {
+    history = {
+        max = 200,
+        picker = "fzf-lua"
+    },
+    ui = {
+        prompt = {
+            max_width = 40
+        },
+        terminal = {
+            height = 0.25,
+            split = "below"
+        }
+    },
+    keymaps = {
+        prompt = {
+            ni = {
+                { '<Up>', prompt_act.history_up },
+                { '<Down>', prompt_act.history_down },
+                { '<C-f>', prompt_act.search },
+                { '<CR>', prompt_act.enter },
+                { '<C-d>', prompt_act.cancel },
+            },
+            n = {
+                { '<Esc>', prompt_act.cancel }
+            }
+        },
+        terminal = {
+            n = {
+                { '<CR>', terminal_act.follow_error }
+            }
+        }
+    }
 }
 ```
 
 # How to use
 
 The plugin provides you two commands:
-
 - `CommandExecute`: Opens a prompt and asks you for the command that you want to execute. Then, a terminal appears and runs the command.
-
-> [!NOTE]
-> The terminal will always appear at the bottom, taking up a quarter of Neovim window. This is not configurable yet.
-
-- `CommandRexecute`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
+- `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.

@@ -23,6 +23,8 @@ function M.execute()
     vim.cmd("startinsert")
 
     require('command.ui.keymaps.prompt').apply()
+    require('command.ui.ghost').attach()
+    require('command.ui.ghost').update()
 end
 
 -- Executes the last executed command.

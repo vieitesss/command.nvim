@@ -103,6 +103,8 @@ function M.attach()
             require('command.ui.ghost').clear(b)
         end,
     })
+
+    vim.notify('Ghost text enabled', vim.log.levels.INFO)
 end
 
 return M

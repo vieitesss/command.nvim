@@ -36,7 +36,7 @@ local function choose_suggestion(prefix, history)
     return nil
 end
 
-local function render(buf, win, suggestion, prefix)
+local function render(buf, suggestion, prefix)
     M.clear(buf)
     if not suggestion then return end
     local suffix = suggestion:sub(#prefix + 1)
@@ -62,22 +62,34 @@ end
 
 function M.update()
     local window = state.get_window_by_name('prompt')
+
     if not window then return end
+
     local buf, win = window.buf, window.win
-    if not (vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_win_is_valid(win)) then return end
+
+    if not (vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_win_is_valid(win))
+    then
+        return
+    end
 
     local line = (vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] or '')
     local suggestion = choose_suggestion(line, state.history_list())
-    render(buf, win, suggestion, line)
+
+    render(buf, suggestion, line)
 end
 
 function M.accept_all()
-    local window = state.get_window_by_name('prompt'); if not window then return end
+    local window = state.get_window_by_name('prompt')
+    if not window then return end
+
     local buf, win = window.buf, window.win
     local preview = M._preview
+
     if not preview then return end
+
     vim.api.nvim_buf_set_lines(buf, 0, 1, false, { preview })
     vim.api.nvim_win_set_cursor(win, { 1, #preview })
+
     M.clear(buf)
 end
 
@@ -85,33 +97,48 @@ function M.attach()
     vim.notify('Ghost text attaching', vim.log.levels.INFO)
     local window = state.get_window_by_name('prompt')
     if not window then
-        vim.notify('Ghost text failed to attach: prompt window not found', vim.log.levels.WARN)
+        vim.notify(
+            'Ghost text failed to attach: prompt window not found',
+            vim.log.levels.WARN
+        )
         return
     end
 
     local buf = window.buf
     if not vim.api.nvim_buf_is_valid(buf) then
-        vim.notify('Ghost text failed to attach: prompt buffer not valid', vim.log.levels.WARN)
+        vim.notify(
+            'Ghost text failed to attach: prompt buffer not valid',
+            vim.log.levels.WARN
+        )
         return
     end
 
-    local grp = vim.api.nvim_create_augroup('CommandGhost_' .. tostring(buf), { clear = true })
+    local grp = vim.api.nvim_create_augroup(
+        'CommandGhost_' .. tostring(buf),
+        { clear = true }
+    )
 
-    vim.api.nvim_create_autocmd({ 'InsertEnter', 'TextChangedI', 'TextChanged', 'CursorMovedI' }, {
-        group = grp,
-        buffer = buf,
-        callback = function() require('command.ui.ghost').update() end,
-    })
+    vim.api.nvim_create_autocmd(
+        { 'InsertEnter', 'InsertLeave', 'TextChangedI', 'TextChanged' },
+        {
+            group = grp,
+            buffer = buf,
+            callback = function() require('command.ui.ghost').update() end,
+        }
+    )
 
     -- Hide ghost text when leaving insert or when buffer/window closes
-    vim.api.nvim_create_autocmd({ 'InsertLeave', 'BufWipeout', 'BufDelete', 'WinClosed' }, {
-        group = grp,
-        buffer = buf,
-        callback = function()
-            local b = vim.api.nvim_get_current_buf()
-            require('command.ui.ghost').clear(b)
-        end,
-    })
+    vim.api.nvim_create_autocmd(
+        { 'InsertLeave', 'BufWipeout', 'BufDelete', 'WinClosed' },
+        {
+            group = grp,
+            buffer = buf,
+            callback = function()
+                local b = vim.api.nvim_get_current_buf()
+                require('command.ui.ghost').clear(b)
+            end,
+        }
+    )
 
     vim.notify('Ghost text enabled', vim.log.levels.INFO)
 end

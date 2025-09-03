@@ -82,6 +82,8 @@ function M.accept_all()
 end
 
 function M.attach()
+    vim.log.setlevel(vim.log.levels.INFO)
+    vim.notify('Ghost text attaching', vim.log.levels.INFO)
     local window = state.get_window_by_name('prompt'); if not window then return end
     local buf = window.buf
     if not vim.api.nvim_buf_is_valid(buf) then return end

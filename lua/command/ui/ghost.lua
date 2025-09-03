@@ -83,9 +83,17 @@ end
 
 function M.attach()
     vim.notify('Ghost text attaching', vim.log.levels.INFO)
-    local window = state.get_window_by_name('prompt'); if not window then return end
+    local window = state.get_window_by_name('prompt')
+    if not window then
+        vim.notify('Ghost text failed to attach: prompt window not found', vim.log.levels.WARN)
+        return
+    end
+
     local buf = window.buf
-    if not vim.api.nvim_buf_is_valid(buf) then return end
+    if not vim.api.nvim_buf_is_valid(buf) then
+        vim.notify('Ghost text failed to attach: prompt buffer not valid', vim.log.levels.WARN)
+        return
+    end
 
     local grp = vim.api.nvim_create_augroup('CommandGhost_' .. tostring(buf), { clear = true })
 

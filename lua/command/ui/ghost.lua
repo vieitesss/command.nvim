@@ -43,9 +43,9 @@ local function render(buf, win, suggestion, prefix)
     if suffix == '' then return end
 
     local row = 0
-    local col = vim.api.nvim_win_get_cursor(win)[2]
+    local line = (vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] or '')
+    local col = #line -- byte index at EOL (what extmarks expect)
 
-    -- Define highlight once (links to Comment by default)
     pcall(vim.api.nvim_set_hl, 0, HL, { link = 'Comment', default = true })
 
     local ok, id = pcall(vim.api.nvim_buf_set_extmark, buf, NS, row, col, {

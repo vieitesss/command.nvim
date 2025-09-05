@@ -45,8 +45,6 @@ end
 
 function M.show_prompt()
     local opts = require('command.ui.prompt').create()
-    require('command.ui.ghost').attach()
-    require('command.ui.ghost').update()
     return show(opts)
 end
 

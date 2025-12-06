@@ -7,6 +7,10 @@ function M.setup(opts)
     M._ghost_text = opts.ghost_text or true
 end
 
+function M.ghost_text_enabled()
+    return M._ghost_text
+end
+
 function M.create()
     local buf = vim.api.nvim_create_buf(true, true)
     vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = buf })

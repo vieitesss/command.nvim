@@ -22,6 +22,11 @@ function M.execute()
 
     vim.cmd("startinsert")
 
+    if require('command.ui.prompt').ghost_text_enabled() then
+        require('command.ui.ghost').attach()
+        require('command.ui.ghost').update()
+    end
+
     require('command.ui.keymaps.prompt').apply()
 end
 

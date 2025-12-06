@@ -10,7 +10,8 @@ local defaults = {
     },
     ui = {
         prompt = {
-            max_width = 40
+            max_width = 40,
+            ghost_text = true
         },
         terminal = {
             height = 0.25,

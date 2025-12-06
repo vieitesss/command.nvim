@@ -22,10 +22,10 @@ function M.create()
         width = width,
     }
 
-    if M._ghost_text then
-        require('command.ui.ghost').attach()
-        require('command.ui.ghost').update()
-    end
+    -- if M._ghost_text then
+    --     require('command.ui.ghost').attach()
+    --     require('command.ui.ghost').update()
+    -- end
 
     return {
         name = "prompt",

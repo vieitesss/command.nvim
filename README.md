@@ -69,7 +69,6 @@ defaults = {
         },
         terminal = {
             -- WARNING: There is no `ni` in terminal mode
-            -- WARNING: There is no `i` in prompt mode
             n = {
                 { '<CR>', terminal_act.follow_error }
             }

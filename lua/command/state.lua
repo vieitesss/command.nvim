@@ -74,7 +74,7 @@ function M.add_history_entry(cmd)
 end
 
 function M.remove_history_entry(idx)
-    table.remove(M._history, idx)
+    table.remove(M._history.list, idx)
 end
 
 function M.history_last()

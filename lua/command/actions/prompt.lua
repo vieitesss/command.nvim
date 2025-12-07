@@ -4,6 +4,7 @@ local state = require 'command.state'
 local actions = require 'command.actions'
 local errors = require 'command.errors'
 local ghost = require 'command.ui.ghost'
+local validation = require 'command.validation'
 
 local M = {}
 
@@ -75,8 +76,10 @@ function M.enter()
     if cmd == "" then
         utils.print_error(ERROR_COMMAND_NOT_PROVIDED)
     else
-        actions.exec_command(cmd)
-        state._has_run = true
+        local exec_ok = actions.exec_command(cmd)
+        if exec_ok then
+            state._has_run = true
+        end
     end
 
     state.reset_history_index()

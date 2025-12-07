@@ -1,3 +1,13 @@
+---@class Window
+---@field name string Window identifier
+---@field buf integer Buffer handle
+---@field win integer Window handle
+---@field opts table Window options
+
+---@class HistoryState
+---@field list string[] List of commands
+---@field index integer Current position in history
+
 local utils = require 'command.utils'
 
 local M = {
@@ -7,6 +17,9 @@ local M = {
     _main_win = 0
 }
 
+---Set the main window to return to after command execution.
+---@param win integer Window handle
+---@return boolean success Whether the window is valid
 function M.set_main_win(win)
     local valid = vim.api.nvim_win_is_valid(win)
 
@@ -19,16 +32,24 @@ function M.set_main_win(win)
     return valid
 end
 
+---Initialize history state from a list of commands.
+---@param list string[] List of previously saved commands
+---@return nil
 function M.setup_history(list)
     M._history.list = list
     M._history.index = #M._history.list + 1
 end
 
+---Set the current position in command history.
+---@param idx integer History index
+---@return nil
 function M.set_history_index(idx)
     M._history.index = idx
 end
 
----@return table|nil -- the window with the given name
+---Get a window by its name identifier.
+---@param name string Window name
+---@return Window|nil window The window object or nil if not found
 function M.get_window_by_name(name)
     for _, window in ipairs(M._windows) do
         if window.name == name then
@@ -39,10 +60,16 @@ function M.get_window_by_name(name)
     return nil
 end
 
+---Add a window to the tracking list.
+---@param opts Window Window object with name, buf, win, opts
+---@return nil
 function M.add_window(opts)
     table.insert(M._windows, opts)
 end
 
+---Remove a window from tracking and delete its buffer.
+---@param name string Window name identifier
+---@return nil
 function M.remove_window(name)
     local idx = 0
     local win = nil
@@ -64,23 +91,36 @@ function M.remove_window(name)
     table.remove(M._windows, idx)
 end
 
+---Get a copy of the command history list.
+---@return string[] commands List of commands
 function M.history_list()
     return vim.deepcopy(M._history.list)
 end
 
+---Add a command to the history.
+---@param cmd string Command to add
+---@return nil
 function M.add_history_entry(cmd)
     table.insert(M._history.list, cmd)
     M._history.last = cmd
 end
 
+---Remove a command from history by index.
+---@param idx integer Index to remove (1-based)
+---@return nil
 function M.remove_history_entry(idx)
     table.remove(M._history.list, idx)
 end
 
+---Get the last executed command.
+---@return string|nil command Last command or nil if history empty
 function M.history_last()
     return M._history.list[#M._history.list]
 end
 
+---Reset history index to the end of the list.
+---Used when exiting history navigation mode.
+---@return nil
 function M.reset_history_index()
     M._history.index = #M._history.list + 1
 end

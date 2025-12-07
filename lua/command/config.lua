@@ -1,3 +1,31 @@
+---@class CommandConfigHistoryOpts
+---@field max integer Maximum number of commands to store (default: 200)
+---@field picker string History picker to use: 'fzf-lua' (default: 'fzf-lua')
+
+---@class CommandConfigPromptOpts
+---@field max_width integer Maximum width of prompt window (default: 40)
+---@field ghost_text boolean Enable ghost text suggestions (default: true)
+
+---@class CommandConfigTerminalOpts
+---@field height number Terminal height as fraction of screen (default: 0.25)
+---@field split string Split direction: 'below'|'above'|'left'|'right' (default: 'below')
+
+---@class CommandConfigUIOptions
+---@field prompt CommandConfigPromptOpts
+---@field terminal CommandConfigTerminalOpts
+
+---@class CommandConfigKeymap
+---@field [integer] table Keymap definition {key, action}
+
+---@class CommandConfigKeymaps
+---@field prompt table Prompt mode keymaps
+---@field terminal table Terminal mode keymaps
+
+---@class CommandConfig
+---@field history CommandConfigHistoryOpts
+---@field ui CommandConfigUIOptions
+---@field keymaps CommandConfigKeymaps
+
 local prompt_act = require 'command.actions.prompt'
 local terminal_act = require 'command.actions.terminal'
 

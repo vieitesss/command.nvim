@@ -1,3 +1,7 @@
+---@class Command
+---@field execute fun(): nil
+---@field execute_last fun(): nil
+
 local M = {}
 
 local ui = require 'command.ui'
@@ -5,7 +9,10 @@ local utils = require 'command.utils'
 local state = require 'command.state'
 local actions = require 'command.actions'
 
--- Displays a prompt to execute a new command.
+---Display a prompt to execute a new command.
+---Opens an interactive command input window where users can type and execute shell commands.
+---The command is stored in history and can be re-executed later.
+---@return nil
 function M.execute()
     local win = state.get_window_by_name('prompt')
     if win then
@@ -25,7 +32,10 @@ function M.execute()
     require('command.ui.keymaps.prompt').apply()
 end
 
--- Executes the last executed command.
+---Execute the last executed command.
+---Re-runs the most recently executed command without opening the prompt.
+---Requires that at least one command has been executed in the current session.
+---@return nil
 function M.execute_last()
     state.set_main_win(vim.api.nvim_get_current_win())
 

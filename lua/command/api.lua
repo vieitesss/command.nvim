@@ -1,6 +1,7 @@
 ---@class Command
 ---@field execute fun(): nil
 ---@field execute_last fun(): nil
+---@field teardown fun(): nil
 
 local M = {}
 

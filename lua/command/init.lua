@@ -81,4 +81,42 @@ function M.execute_last()
     return api.execute_last()
 end
 
+---Teardown and reset the plugin state.
+---
+---Closes all open windows and resets the plugin to an uninitialized state.
+---Useful for testing or manually resetting the plugin without restarting Neovim.
+---
+---Usage:
+---```lua
+---require('command').teardown()
+---```
+---
+---@return nil
+function M.teardown()
+    if not M._initialized then
+        return
+    end
+
+    local state = require 'command.state'
+
+    -- Close all open windows (prompt and terminal)
+    for _, window in ipairs(vim.deepcopy(state._windows)) do
+        if vim.api.nvim_win_is_valid(window.win) then
+            pcall(vim.api.nvim_win_close, window.win, true)
+        end
+        if vim.api.nvim_buf_is_valid(window.buf) then
+            pcall(vim.api.nvim_buf_delete, window.buf, { force = true })
+        end
+    end
+
+    -- Clear state
+    state._windows = {}
+    state._has_run = false
+    state._main_win = 0
+    state._history = {}
+
+    -- Reset initialization flag
+    M._initialized = false
+end
+
 return M

@@ -3,8 +3,8 @@ local M = {}
 local COMMAND_WIN_HEIGHT = 1
 
 function M.setup(opts)
-    M._max_width = opts.max_width or 40
-    M._ghost_text = opts.ghost_text or true
+    M._max_width = opts.max_width
+    M._ghost_text = opts.ghost_text
 end
 
 function M.ghost_text_enabled()
@@ -25,11 +25,6 @@ function M.create()
         height = height,
         width = width,
     }
-
-    -- if M._ghost_text then
-    --     require('command.ui.ghost').attach()
-    --     require('command.ui.ghost').update()
-    -- end
 
     return {
         name = "prompt",

@@ -44,8 +44,20 @@ end
 
 
 function M.show_prompt()
-    local opts = require('command.ui.prompt').create()
-    return show(opts)
+    local prompt = require('command.ui.prompt')
+    local opts = prompt.create()
+    local ok = show(opts)
+    if not ok then
+        return false
+    end
+
+    local ghost = require('command.ui.ghost')
+    if prompt.ghost_text_enabled() then
+        ghost.attach()
+        ghost.update()
+    end
+
+    return true
 end
 
 function M.windows()

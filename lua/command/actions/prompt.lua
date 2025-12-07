@@ -3,37 +3,41 @@ local hist = require 'command.history'
 local state = require 'command.state'
 local actions = require 'command.actions'
 local errors = require 'command.errors'
+local ghost = require 'command.ui.ghost'
 
 local M = {}
 
 local WINDOW_NAME = "prompt"
 local ERROR_COMMAND_NOT_PROVIDED = "No command was provided"
 
+local function get_win(func_name)
+    local window = state.get_window_by_name(WINDOW_NAME)
+    if not window then
+        errors.WINDOW_NOT_FOUND(func_name, WINDOW_NAME)
+        return nil
+    end
+    return window
+end
+
 function M.setup(picker)
     M._picker = picker
 end
 
-
 function M.history_up()
-    local window = state.get_window_by_name(WINDOW_NAME)
-    if not window then
-        errors.WINDOW_NOT_FOUND('history_up', WINDOW_NAME)
-        return
-    end
+    local window = get_win('history_up')
+    if not window then return end
 
     local current = state._history.index
     if current > 1 then
         state.set_history_index(current - 1)
         utils.set_cmd_prompt(window.buf, window.win, state.history_list()[state._history.index] or "")
+        ghost.update()
     end
 end
 
 function M.history_down()
-    local window = state.get_window_by_name(WINDOW_NAME)
-    if not window then
-        errors.WINDOW_NOT_FOUND('history_down', WINDOW_NAME)
-        return
-    end
+    local window = get_win('history_down')
+    if not window then return end
 
     local len = #state.history_list()
     local current = state._history.index
@@ -45,6 +49,8 @@ function M.history_down()
         state.set_history_index(len + 1)
         utils.set_cmd_prompt(window.buf, window.win, "")
     end
+
+    ghost.update()
 end
 
 function M.search()
@@ -52,11 +58,10 @@ function M.search()
 end
 
 function M.enter()
-    local window = state.get_window_by_name(WINDOW_NAME)
-    if not window then
-        errors.WINDOW_NOT_FOUND('enter', WINDOW_NAME)
-        return
-    end
+    local window = get_win('enter')
+    if not window then return end
+
+    ghost.clear(window.buf)
 
     local cmd = vim.api.nvim_buf_get_lines(window.buf, 0, 1, false)[1] or ""
 
@@ -78,11 +83,10 @@ function M.enter()
 end
 
 function M.cancel()
-    local window = state.get_window_by_name(WINDOW_NAME)
-    if not window then
-        errors.WINDOW_NOT_FOUND('cancel', WINDOW_NAME)
-        return
-    end
+    local window = get_win('cancel')
+    if not window then return end
+
+    ghost.clear(window.buf)
 
     local buf, win = window.buf, window.win
 
@@ -94,6 +98,13 @@ function M.cancel()
     end
 
     state.reset_history_index()
+end
+
+function M.accept_ghost()
+    local window = get_win('accept_ghost')
+    if not window then return end
+
+    ghost.accept_all()
 end
 
 return M

@@ -3,7 +3,12 @@ local M = {}
 local COMMAND_WIN_HEIGHT = 1
 
 function M.setup(opts)
-    M._max_width = opts.max_width or 40
+    M._max_width = opts.max_width
+    M._ghost_text = opts.ghost_text
+end
+
+function M.ghost_text_enabled()
+    return M._ghost_text
 end
 
 function M.create()

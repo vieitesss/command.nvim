@@ -2,10 +2,13 @@
 
 Neovim plugin that allows you to:
 - Type a command you want to run and execute it directly in a terminal inside Neovim.
+    - You can use your shell configuration (e.g., aliases, functions).
+- Keep a history of executed commands and easily access them.
+- Re-execute the last executed command with a single command.
+- Search through the history of executed commands using:
+    - fzf-lua
+- Get completion suggestions as virtual text while typing.
 - Follow compilation errors for some languages (credits to [compile-mode.nvim](https://github.com/ej-shafran/compile-mode.nvim/tree/main)).
-
->[!NOTE]
-> This plugin is not configurable yet because it works fine for me as it is. If I get feedback on it, I'll add the option to customize some things.
 
 # Installation
 
@@ -51,18 +54,21 @@ defaults = {
     },
     keymaps = {
         prompt = {
-            ni = {
+            -- WARNING: There is no `i` in prompt mode
+            ni = { -- normal and insert modes
                 { '<Up>', prompt_act.history_up },
                 { '<Down>', prompt_act.history_down },
                 { '<C-f>', prompt_act.search },
                 { '<CR>', prompt_act.enter },
                 { '<C-d>', prompt_act.cancel },
+                { '<C-e>', prompt_act.accept_ghost },
             },
-            n = {
+            n = { -- normal mode
                 { '<Esc>', prompt_act.cancel }
             }
         },
         terminal = {
+            -- WARNING: There is no `ni` in terminal mode
             n = {
                 { '<CR>', terminal_act.follow_error }
             }

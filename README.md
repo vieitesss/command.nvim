@@ -8,6 +8,7 @@ Neovim plugin that allows you to:
 - Search through the history of executed commands using:
     - fzf-lua
 - Get completion suggestions as virtual text while typing.
+- Validate commands for potentially dangerous patterns (command substitution, piping to `rm`/`dd`, redirects to system files, etc.) with optional warnings and confirmation prompts.
 - Follow compilation errors for some languages (credits to [compile-mode.nvim](https://github.com/ej-shafran/compile-mode.nvim/tree/main)).
 
 # Installation
@@ -53,6 +54,9 @@ defaults = {
             split = "below"
         }
     },
+    validation = {
+        warn = true  -- Show warnings for potentially dangerous patterns
+    },
     keymaps = {
         prompt = {
             -- WARNING: There is no `i` in prompt mode
@@ -83,3 +87,30 @@ defaults = {
 The plugin provides you two commands:
 - `CommandExecute`: Opens a prompt and asks you for the command that you want to execute. Then, a terminal appears and runs the command.
 - `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
+
+## Validation Warnings
+
+The plugin validates commands for potentially dangerous patterns and shows a warning before execution. This helps prevent accidental execution of destructive commands.
+
+### Detected Patterns
+
+The plugin warns about:
+- Command substitution: `$(...)` or `` `...` ``
+- Piping to dangerous commands: `| rm`, `| dd`, `| mkfs`, `| shred`
+- Redirects to system files: `> /etc/`, `> /sys/`, `> /dev/`
+- Background execution: `&` at the end
+- Command chains: `||`, `&&`
+
+### Disabling Warnings
+
+If you want to disable validation warnings, set `validation.warn = false`:
+
+```lua
+require('command').setup({
+    validation = {
+        warn = false
+    }
+})
+```
+
+When warnings are enabled (default), the plugin will display the dangerous pattern(s) detected and the full command, then prompt you to confirm execution with `(y/n):`.

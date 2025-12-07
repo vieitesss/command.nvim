@@ -4,6 +4,7 @@ local state = require 'command.state'
 local actions = require 'command.actions'
 local errors = require 'command.errors'
 local ghost = require 'command.ui.ghost'
+local validation = require 'command.validation'
 
 local M = {}
 

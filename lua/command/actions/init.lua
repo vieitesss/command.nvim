@@ -1,5 +1,6 @@
 local ui = require 'command.ui'
 local utils = require 'command.utils'
+local validation = require 'command.validation'
 
 local M = {}
 
@@ -11,6 +12,7 @@ local ERROR_INVALID_SHELL = "Shell not found or not executable"
 ---
 ---Handles errors gracefully:
 ---- Empty command validation
+---- Dangerous pattern detection
 ---- Shell availability checking
 ---- Terminal window creation errors
 ---- Job start failures with recovery
@@ -18,9 +20,16 @@ local ERROR_INVALID_SHELL = "Shell not found or not executable"
 ---@param command string The command to execute
 ---@return boolean success Whether execution was successful
 function M.exec_command(command)
-    -- Validate command is not empty
+    -- Check if command is empty
     if not command or command:len() == 0 then
         utils.print_error(ERROR_INVALID_COMMAND)
+        return false
+    end
+
+    -- Validate command for dangerous patterns (may prompt user)
+    if not validation.validate_command(command) then
+        -- Command is not empty, so validation returned false because user cancelled confirmation
+        -- Silently return without error message
         return false
     end
 

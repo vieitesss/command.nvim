@@ -14,6 +14,9 @@
 ---@field prompt CommandConfigPromptOpts
 ---@field terminal CommandConfigTerminalOpts
 
+---@class CommandConfigValidationOpts
+---@field warn boolean Show validation warnings for dangerous patterns (default: true)
+
 ---@class CommandConfigKeymap
 ---@field [integer] table Keymap definition {key, action}
 
@@ -24,6 +27,7 @@
 ---@class CommandConfig
 ---@field history CommandConfigHistoryOpts
 ---@field ui CommandConfigUIOptions
+---@field validation CommandConfigValidationOpts
 ---@field keymaps CommandConfigKeymaps
 
 local prompt_act = require 'command.actions.prompt'
@@ -45,6 +49,9 @@ local defaults = {
             height = 0.25,
             split = "below"
         }
+    },
+    validation = {
+        warn = true
     },
     keymaps = {
         prompt = {

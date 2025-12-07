@@ -46,9 +46,11 @@ function M.execute_last()
     end
 
     local last = state.history_last()
-    actions.exec_command(last)
+    local exec_ok = actions.exec_command(last)
 
-    require('command.ui.keymaps.terminal').apply()
+    if exec_ok then
+        require('command.ui.keymaps.terminal').apply()
+    end
 end
 
 return M

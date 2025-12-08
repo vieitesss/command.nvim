@@ -15,7 +15,7 @@ local function load_command()
 end
 
 -- Define <Plug> mappings for user customization (lazy-loaded)
-vim.keymap.set({'n', 'i'}, '<Plug>(CommandExecute)', function()
+vim.keymap.set({'n', 'i', 'x', 'v'}, '<Plug>(CommandExecute)', function()
     local command = load_command()
     if command then
         command.execute()
@@ -29,13 +29,20 @@ vim.keymap.set({'n', 'i'}, '<Plug>(CommandExecuteLast)', function()
     end
 end, { desc = 'Execute last command' })
 
+vim.keymap.set({'n', 'x', 'v'}, '<Plug>(CommandExecuteSelection)', function()
+    local command = load_command()
+    if command then
+        command.execute_selection()
+    end
+end, { desc = 'Execute selected text as command' })
+
 -- Create user commands (lazy-loaded)
 vim.api.nvim_create_user_command("CommandExecute", function()
     local command = load_command()
     if command then
         command.execute()
     end
-end, {})
+end, { range = true })
 
 vim.api.nvim_create_user_command("CommandExecuteLast", function()
     local command = load_command()
@@ -43,3 +50,10 @@ vim.api.nvim_create_user_command("CommandExecuteLast", function()
         command.execute_last()
     end
 end, {})
+
+vim.api.nvim_create_user_command("CommandExecuteSelection", function()
+    local command = load_command()
+    if command then
+        command.execute_selection()
+    end
+end, { range = true })

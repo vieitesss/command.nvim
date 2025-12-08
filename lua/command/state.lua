@@ -8,13 +8,22 @@
 ---@field list string[] List of commands
 ---@field index integer Current position in history
 
+---@class ExecutionContext
+---@field buf integer Buffer handle
+---@field win integer Window handle
+---@field cursor integer[] Cursor position {line, col}
+---@field mode string Current mode
+---@field selection_start integer[]|nil Start of selection {line, col}
+---@field selection_end integer[]|nil End of selection {line, col}
+
 local utils = require 'command.utils'
 
 local M = {
     _history = {},
     _has_run = false,
     _windows = {},
-    _main_win = 0
+    _main_win = 0,
+    _context = nil ---@type ExecutionContext|nil
 }
 
 ---Set the main window to return to after command execution.
@@ -30,6 +39,18 @@ function M.set_main_win(win)
     end
 
     return valid
+end
+
+---Set the execution context (buffer, window, cursor, etc.).
+---@param ctx ExecutionContext
+function M.set_context(ctx)
+    M._context = ctx
+end
+
+---Get the current execution context.
+---@return ExecutionContext|nil
+function M.get_context()
+    return M._context
 end
 
 ---Initialize history state from a list of commands.

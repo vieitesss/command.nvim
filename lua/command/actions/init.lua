@@ -1,6 +1,8 @@
 local ui = require 'command.ui'
 local utils = require 'command.utils'
 local validation = require 'command.validation'
+local expansion = require 'command.expansion'
+local state = require 'command.state'
 
 local M = {}
 
@@ -12,6 +14,7 @@ local ERROR_INVALID_SHELL = "Shell not found or not executable"
 ---
 ---Handles errors gracefully:
 ---- Empty command validation
+---- Context variable expansion
 ---- Dangerous pattern detection
 ---- Shell availability checking
 ---- Terminal window creation errors
@@ -26,8 +29,12 @@ function M.exec_command(command)
         return false
     end
 
+    -- Expand context variables
+    local context = state.get_context()
+    local expanded_command = expansion.expand(command, context)
+
     -- Validate command for dangerous patterns (may prompt user)
-    if not validation.validate_command(command) then
+    if not validation.validate_command(expanded_command) then
         -- Command is not empty, so validation returned false because user cancelled confirmation
         -- Silently return without error message
         return false
@@ -53,7 +60,7 @@ function M.exec_command(command)
     end
 
     -- Start the job
-    local cmd = { shell, "-ic", command }
+    local cmd = { shell, "-ic", expanded_command }
     local ok, job_id = pcall(vim.fn.jobstart, cmd, { term = true })
 
     if not ok or job_id <= 0 then

@@ -90,14 +90,14 @@ The plugin provides you two commands:
 - `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
 - `CommandExecuteSelection`: Executes the current text selection as a shell command directly.
 
-## Context Variables
+### Context Variables
 
 You can use the following variables in your commands to reference the current editor context. They will be automatically expanded before execution.
 
 - `${file}`: Absolute path of the current buffer.
-- `${file_head}`: Directory of the current buffer (`:h`).
-- `${file_tail}`: Filename of the current buffer (`:t`).
-- `${file_root}`: Filename without extension (`:r`).
+- `${fileDir}`: Directory of the current buffer (`:h`).
+- `${fileName}`: Filename of the current buffer (`:t`).
+- `${fileRoot}`: Filename without extension (`:r`).
 - `${line}`: Current cursor line number.
 - `${col}`: Current cursor column number.
 - `${cwd}`: Current working directory.

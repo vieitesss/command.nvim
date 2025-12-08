@@ -13,15 +13,15 @@ function M.expand(cmd, context)
         ["file"] = function()
             return vim.api.nvim_buf_get_name(context.buf)
         end,
-        ["file_head"] = function()
+        ["fileDir"] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
             return vim.fn.fnamemodify(path, ":h")
         end,
-        ["file_tail"] = function()
+        ["fileName"] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
             return vim.fn.fnamemodify(path, ":t")
         end,
-        ["file_root"] = function()
+        ["fileRoot"] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
             return vim.fn.fnamemodify(path, ":r")
         end,

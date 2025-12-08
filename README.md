@@ -7,6 +7,7 @@ Neovim plugin that allows you to:
 - Re-execute the last executed command with a single command.
 - Search through the history of executed commands using:
     - fzf-lua
+- Use context variables in your commands (e.g., `${file}`, `${line}`, `${selection}`) to reference the current editor state.
 - Get completion suggestions as virtual text while typing.
 - Validate commands for potentially dangerous patterns (command substitution, piping to `rm`/`dd`, redirects to system files, etc.) with optional warnings and confirmation prompts.
 - Follow compilation errors for some languages (credits to [compile-mode.nvim](https://github.com/ej-shafran/compile-mode.nvim/tree/main)).
@@ -87,6 +88,37 @@ defaults = {
 The plugin provides you two commands:
 - `CommandExecute`: Opens a prompt and asks you for the command that you want to execute. Then, a terminal appears and runs the command.
 - `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
+- `CommandExecuteSelection`: Executes the current text selection as a shell command directly.
+
+### Context Variables
+
+You can use the following variables in your commands to reference the current editor context. They will be automatically expanded before execution.
+
+- `${file}`: Absolute path of the current buffer.
+- `${fileDir}`: Directory of the current buffer (`:h`).
+- `${fileName}`: Filename of the current buffer (`:t`).
+- `${fileRoot}`: Filename without extension (`:r`).
+- `${line}`: Current cursor line number.
+- `${col}`: Current cursor column number.
+- `${cwd}`: Current working directory.
+- `${selection}`: The text from the last visual selection.
+- `${selection:sh}`: The text from the last visual selection, shell-escaped for safe use in commands.
+
+### Raw vs Escaped Selection
+
+- **Use `${selection}` (Raw)** when the selection contains multiple arguments, flags, or shell operators that you want the shell to interpret.
+    - *Example:* `rm ${selection}` where selection is `file1.txt file2.txt`.
+    - *Example:* `grep ${selection}` where selection is `-r "search" .`
+- **Use `${selection:sh}` (Escaped)** when the selection is a single string containing special characters (spaces, quotes, `&`, etc.) that should be treated as a single argument.
+    - *Example:* `git commit -m ${selection:sh}` where selection is `Fix: "broken" logic & typos`.
+    - *Example:* `curl ${selection:sh}` where selection is `https://example.com?query=1&param=2`.
+
+**Examples:**
+
+- Run the current file: `python ${file}`
+- Git blame current line: `git blame -L ${line},+1 ${file}`
+- Echo selected text: `echo '${selection}'`
+- Search selected text (even with special characters) with `grep`: `grep ${selection:sh} ${file}`
 
 ## Validation Warnings
 

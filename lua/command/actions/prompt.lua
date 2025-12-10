@@ -101,6 +101,7 @@ function M.cancel()
     end
 
     state.reset_history_index()
+    vim.cmd("stopinsert")
 end
 
 function M.accept_ghost()

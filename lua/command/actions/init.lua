@@ -66,7 +66,16 @@ function M.exec_command(command)
 
     -- Start the job
     local cmd = { shell, "-ic", expanded_command }
-    local ok, job_id = pcall(vim.fn.jobstart, cmd, { term = true })
+    
+    local opts = { term = true }
+    if context and context.buf then
+        local file = vim.api.nvim_buf_get_name(context.buf)
+        if file ~= "" then
+            opts.cwd = vim.fn.fnamemodify(file, ":h")
+        end
+    end
+
+    local ok, job_id = pcall(vim.fn.jobstart, cmd, opts)
 
     if not ok or job_id <= 0 then
         local error_msg = "Failed to start command execution"

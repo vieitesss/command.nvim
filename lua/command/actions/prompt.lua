@@ -100,6 +100,10 @@ function M.cancel()
         vim.api.nvim_buf_delete(buf, { force = true })
     end
 
+    if state.get_window_by_name(WINDOW_NAME) then
+        state.remove_window(WINDOW_NAME)
+    end
+
     state.reset_history_index()
     vim.cmd("stopinsert")
 end

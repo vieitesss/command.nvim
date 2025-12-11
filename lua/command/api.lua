@@ -26,12 +26,18 @@ end
 ---The command is stored in history and can be re-executed later.
 ---@return nil
 function M.execute()
+    capture_context()
+
     local win = state.get_window_by_name('prompt')
     if win then
-        return
+        if vim.api.nvim_win_is_valid(win.win) then
+            vim.api.nvim_set_current_win(win.win)
+            vim.cmd("startinsert")
+            return
+        else
+            state.remove_window('prompt')
+        end
     end
-
-    capture_context()
 
     local ok = ui.show_prompt()
     if not ok then

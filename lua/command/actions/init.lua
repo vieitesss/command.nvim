@@ -7,6 +7,7 @@ local state = require 'command.state'
 local M = {}
 
 local ERROR_TERMINAL_NOT_CREATED = "Could not create the terminal window"
+local ERROR_CONTEXT_NOT_CREATED = "Could not get the current context"
 local ERROR_INVALID_COMMAND = "Command is empty"
 local ERROR_INVALID_SHELL = "Shell not found or not executable"
 
@@ -31,6 +32,10 @@ function M.exec_command(command)
 
     -- Expand context variables
     local context = state.get_context()
+    if not context then
+        utils.print_error(ERROR_CONTEXT_NOT_CREATED)
+        return false
+    end
     local expanded_command = expansion.expand(command, context)
 
     -- Validate command for dangerous patterns (may prompt user)

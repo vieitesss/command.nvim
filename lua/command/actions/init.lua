@@ -71,7 +71,10 @@ function M.exec_command(command)
     if context and context.buf then
         local file = vim.api.nvim_buf_get_name(context.buf)
         if file ~= "" then
-            opts.cwd = vim.fn.fnamemodify(file, ":h")
+            local dir = vim.fn.fnamemodify(file, ":h")
+            if vim.fn.isdirectory(dir) == 1 then
+                opts.cwd = dir
+            end
         end
     end
 

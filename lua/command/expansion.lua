@@ -11,19 +11,20 @@ function M.expand(cmd, context)
 
     local replacements = {
         ["file"] = function()
-            return vim.api.nvim_buf_get_name(context.buf)
-        end,
-        ["fileDir"] = function()
-            local path = vim.api.nvim_buf_get_name(context.buf)
-            return vim.fn.fnamemodify(path, ":h")
-        end,
-        ["fileName"] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
             return vim.fn.fnamemodify(path, ":t")
         end,
-        ["fileRoot"] = function()
+        ["filePath"] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
-            return vim.fn.fnamemodify(path, ":r")
+            return vim.fn.fnamemodify(path, ":p")
+        end,
+        ["fileDir"] = function()
+            local path = vim.api.nvim_buf_get_name(context.buf)
+            return vim.fn.fnamemodify(path, ":p:h")
+        end,
+        ["fileName"] = function()
+            local path = vim.api.nvim_buf_get_name(context.buf)
+            return vim.fn.fnamemodify(path, ":t:r")
         end,
         ["line"] = function()
             return tostring(context.cursor[1])

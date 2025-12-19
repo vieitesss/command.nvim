@@ -94,10 +94,10 @@ The plugin provides you two commands:
 
 You can use the following variables in your commands to reference the current editor context. They will be automatically expanded before execution.
 
-- `${file}`: Absolute path of the current buffer.
-- `${fileDir}`: Directory of the current buffer (`:h`).
-- `${fileName}`: Filename of the current buffer (`:t`).
-- `${fileRoot}`: Filename without extension (`:r`).
+- `${file}`: Full file name (`file.txt`).
+- `${filePath}`: Absolute path of the current buffer.
+- `${fileDir}`: Directory of the current buffer.
+- `${fileName}`: Filename without extension (`file`).
 - `${line}`: Current cursor line number.
 - `${col}`: Current cursor column number.
 - `${cwd}`: Current working directory.
@@ -115,10 +115,10 @@ You can use the following variables in your commands to reference the current ed
 
 **Examples:**
 
-- Run the current file: `python ${file}`
-- Git blame current line: `git blame -L ${line},+1 ${file}`
+- Run the current file: `python ${filePath}`
+- Git blame current line: `git blame -L ${line},+1 ${filePath}`
 - Echo selected text: `echo '${selection}'`
-- Search selected text (even with special characters) with `grep`: `grep ${selection:sh} ${file}`
+- Search selected text (even with special characters) with `grep`: `grep ${selection:sh} ${filePath}`
 
 ## Validation Warnings
 

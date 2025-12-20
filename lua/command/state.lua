@@ -66,6 +66,21 @@ function M.get_cwd_mode()
     return M._cwd_mode
 end
 
+---Get the resolved current working directory based on mode and context.
+---@return string cwd
+function M.get_resolved_cwd()
+    if M._cwd_mode == "buffer" and M._context and M._context.buf then
+        local file = vim.api.nvim_buf_get_name(M._context.buf)
+        if file ~= "" then
+            local dir = vim.fn.fnamemodify(file, ":h")
+            if vim.fn.isdirectory(dir) == 1 then
+                return dir
+            end
+        end
+    end
+    return vim.fn.getcwd()
+end
+
 ---Initialize history state from a list of commands.
 ---@param list string[] List of previously saved commands
 ---@return nil

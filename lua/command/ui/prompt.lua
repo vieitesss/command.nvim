@@ -1,5 +1,7 @@
 local M = {}
 
+local state = require 'command.state'
+
 local COMMAND_WIN_HEIGHT = 1
 
 function M.setup(opts)
@@ -9,6 +11,23 @@ end
 
 function M.ghost_text_enabled()
     return M._ghost_text
+end
+
+local function get_title()
+    local cwd = state.get_resolved_cwd()
+    cwd = vim.fn.fnamemodify(cwd, ":~")
+    return " " .. cwd .. " "
+end
+
+function M.update_title()
+    local window = state.get_window_by_name('prompt')
+    if not window then return end
+    
+    if vim.api.nvim_win_is_valid(window.win) then
+        vim.api.nvim_win_set_config(window.win, {
+            title = get_title(),
+        })
+    end
 end
 
 function M.create()
@@ -30,7 +49,7 @@ function M.create()
         name = "prompt",
         buf = buf,
         opts = {
-            title = "Command to execute",
+            title = get_title(),
             title_pos = "right",
             relative = "editor",
             width = width,

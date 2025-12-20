@@ -123,8 +123,7 @@ function M.toggle_cwd()
     local new = (current == "buffer") and "root" or "buffer"
     state.set_cwd_mode(new)
     
-    local msg = (new == "buffer") and "Current Buffer Directory" or "Project Root Directory"
-    vim.notify("CWD set to: " .. msg, vim.log.levels.INFO, { title = "Command.nvim" })
+    require('command.ui.prompt').update_title()
 end
 
 return M

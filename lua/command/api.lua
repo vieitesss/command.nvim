@@ -19,6 +19,9 @@ local function capture_context()
         cursor = vim.api.nvim_win_get_cursor(0),
         mode = vim.api.nvim_get_mode().mode
     })
+    
+    local config = require('command.config')
+    state.set_cwd_mode(config.values.execution.cwd)
 end
 
 ---Display a prompt to execute a new command.

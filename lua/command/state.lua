@@ -23,7 +23,8 @@ local M = {
     _has_run = false,
     _windows = {},
     _main_win = 0,
-    _context = nil ---@type ExecutionContext|nil
+    _context = nil, ---@type ExecutionContext|nil
+    _cwd_mode = nil ---@type string|nil
 }
 
 ---Set the main window to return to after command execution.
@@ -51,6 +52,18 @@ end
 ---@return ExecutionContext|nil
 function M.get_context()
     return M._context
+end
+
+---Set the current cwd mode.
+---@param mode string 'buffer'|'root'
+function M.set_cwd_mode(mode)
+    M._cwd_mode = mode
+end
+
+---Get the current cwd mode.
+---@return string|nil mode
+function M.get_cwd_mode()
+    return M._cwd_mode
 end
 
 ---Initialize history state from a list of commands.

@@ -115,4 +115,16 @@ function M.accept_ghost()
     ghost.accept_all()
 end
 
+function M.toggle_cwd()
+    local window = get_win('toggle_cwd')
+    if not window then return end
+    
+    local current = state.get_cwd_mode()
+    local new = (current == "buffer") and "root" or "buffer"
+    state.set_cwd_mode(new)
+    
+    local msg = (new == "buffer") and "Current Buffer Directory" or "Project Root Directory"
+    vim.notify("CWD set to: " .. msg, vim.log.levels.INFO, { title = "Command.nvim" })
+end
+
 return M

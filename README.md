@@ -55,6 +55,9 @@ defaults = {
             split = "below"
         }
     },
+    execution = {
+        cwd = "buffer" -- 'buffer' | 'root'
+    },
     validation = {
         warn = true  -- Show warnings for potentially dangerous patterns
     },
@@ -68,6 +71,7 @@ defaults = {
                 { '<CR>', prompt_act.enter },
                 { '<C-d>', prompt_act.cancel },
                 { '<C-e>', prompt_act.accept_ghost },
+                { '<C-o>', prompt_act.toggle_cwd },
             },
             n = { -- normal mode
                 { '<Esc>', prompt_act.cancel }
@@ -89,6 +93,12 @@ The plugin provides you two commands:
 - `CommandExecute`: Opens a prompt and asks you for the command that you want to execute. Then, a terminal appears and runs the command.
 - `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
 - `CommandExecuteSelection`: Executes the current text selection as a shell command directly.
+
+### Working Directory
+
+The prompt window title displays the **Current Working Directory (CWD)** where the command will be executed.
+- By default, it uses the directory of the current buffer (`buffer` mode).
+- You can toggle between the **buffer directory** and the **project root** (from `getcwd()`) by pressing `<C-o>` while in the prompt.
 
 ### Context Variables
 

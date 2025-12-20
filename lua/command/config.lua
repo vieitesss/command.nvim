@@ -14,6 +14,9 @@
 ---@field prompt CommandConfigPromptOpts
 ---@field terminal CommandConfigTerminalOpts
 
+---@class CommandConfigExecutionOpts
+---@field cwd string Working directory mode: 'buffer'|'root' (default: 'buffer')
+
 ---@class CommandConfigValidationOpts
 ---@field warn boolean Show validation warnings for dangerous patterns (default: true)
 
@@ -27,6 +30,7 @@
 ---@class CommandConfig
 ---@field history CommandConfigHistoryOpts
 ---@field ui CommandConfigUIOptions
+---@field execution CommandConfigExecutionOpts
 ---@field validation CommandConfigValidationOpts
 ---@field keymaps CommandConfigKeymaps
 
@@ -50,6 +54,9 @@ local defaults = {
             split = "below"
         }
     },
+    execution = {
+        cwd = "buffer"
+    },
     validation = {
         warn = true
     },
@@ -62,6 +69,7 @@ local defaults = {
                 { '<CR>', prompt_act.enter },
                 { '<C-d>', prompt_act.cancel },
                 { '<C-e>', prompt_act.accept_ghost },
+                { '<C-o>', prompt_act.toggle_cwd },
             },
             n = {
                 { '<Esc>', prompt_act.cancel }
@@ -79,6 +87,22 @@ M.values = vim.deepcopy(defaults)
 
 function M.setup(opts)
     M.values = vim.tbl_deep_extend("force", M.values, opts or {})
+
+    if M.values.execution.cwd ~= "buffer" and M.values.execution.cwd ~= "root" then
+        vim.notify(
+            "command.nvim: Invalid execution.cwd '" .. tostring(M.values.execution.cwd) .. "'. Defaulting to 'buffer'.",
+            vim.log.levels.WARN
+        )
+        M.values.execution.cwd = "buffer"
+    end
+
+    if M.values.history.picker ~= "fzf-lua" then
+        vim.notify(
+            "command.nvim: Invalid history.picker '" .. tostring(M.values.history.picker) .. "'. Only 'fzf-lua' is supported. Defaulting to 'fzf-lua'.",
+            vim.log.levels.WARN
+        )
+        M.values.history.picker = "fzf-lua"
+    end
 end
 
 return M

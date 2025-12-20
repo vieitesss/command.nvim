@@ -95,6 +95,14 @@ function M.setup(opts)
         )
         M.values.execution.cwd = "buffer"
     end
+
+    if M.values.history.picker ~= "fzf-lua" then
+        vim.notify(
+            "command.nvim: Invalid history.picker '" .. tostring(M.values.history.picker) .. "'. Only 'fzf-lua' is supported. Defaulting to 'fzf-lua'.",
+            vim.log.levels.WARN
+        )
+        M.values.history.picker = "fzf-lua"
+    end
 end
 
 return M

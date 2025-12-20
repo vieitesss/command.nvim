@@ -67,20 +67,10 @@ function M.exec_command(command)
     -- Start the job
     local cmd = { shell, "-ic", expanded_command }
     
-    local opts = { term = true }
-    local cwd_mode = state.get_cwd_mode()
-
-    if cwd_mode == "buffer" and context and context.buf then
-        local file = vim.api.nvim_buf_get_name(context.buf)
-        if file ~= "" then
-            local dir = vim.fn.fnamemodify(file, ":h")
-            if vim.fn.isdirectory(dir) == 1 then
-                opts.cwd = dir
-            end
-        end
-    elseif cwd_mode == "root" then
-        opts.cwd = vim.fn.getcwd()
-    end
+    local opts = { 
+        term = true,
+        cwd = state.get_resolved_cwd()
+    }
 
     local ok, job_id = pcall(vim.fn.jobstart, cmd, opts)
 

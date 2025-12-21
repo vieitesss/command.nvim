@@ -163,6 +163,7 @@ function M.enter()
     state._has_run = true
     terminal.create(config.values.ui.terminal)
     executor.run_command(cmd)
+    terminal.enter_normal_mode()
 end
 
 ---User pressed <Esc> - cancel without executing

@@ -65,6 +65,7 @@ function M.execute_selection()
 
     terminal.create(config.values.ui.terminal)
     executor.run_command(selection)
+    terminal.enter_normal_mode()
 
     state._has_run = true
 end
@@ -86,6 +87,7 @@ function M.execute_last()
 
     terminal.create(config.values.ui.terminal)
     executor.run_command(last)
+    terminal.enter_normal_mode()
 end
 
 return M

@@ -79,6 +79,16 @@ function M.show()
     end
 end
 
+---Enter normal mode in terminal
+function M.enter_normal_mode()
+    local window = state.get_window_by_name(WINDOW_NAME)
+    if window and vim.api.nvim_win_is_valid(window.win) then
+        vim.api.nvim_win_call(window.win, function()
+            vim.cmd('stopinsert')
+        end)
+    end
+end
+
 ---Hides the terminal window
 function M.hide()
     local window = state.get_window_by_name(WINDOW_NAME)

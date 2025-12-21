@@ -63,6 +63,9 @@ function M.create(opts)
 
     -- Set window-local options for text handling
     vim.api.nvim_set_option_value('wrap', false, { win = win })
+    
+    -- Completely remove statusline for this window
+    vim.api.nvim_set_option_value('laststatus', 0, { win = win })
 
     -- 6. Register in state
     state.add_window({

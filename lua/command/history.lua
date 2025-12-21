@@ -242,10 +242,6 @@ function M.search(callback)
         winopts = {
             height = 0.35,
             width = 0.5,
-            -- Use a minimal style with proper border
-            title = 'Command History',
-            title_pos = 'center',
-            border = 'rounded',
         },
         actions = {
             default = function(selected)
@@ -253,7 +249,13 @@ function M.search(callback)
                     callback(selected[1])
                 end
             end,
-        },
+            -- Add a quit action that calls the callback with nil
+            -- This ensures the prompt is recreated on escape
+            ["quit"] = function()
+                callback(nil)
+                return true -- Return true to close fzf
+            end
+        }
     }
 
     -- Position below prompt if it exists, matching its dimensions

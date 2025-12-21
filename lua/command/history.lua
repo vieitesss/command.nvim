@@ -242,6 +242,10 @@ function M.search(callback)
         winopts = {
             height = 0.35,
             width = 0.5,
+            -- Use a minimal style with proper border
+            title = 'Command History',
+            title_pos = 'center',
+            border = 'rounded',
         },
         actions = {
             default = function(selected)

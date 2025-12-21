@@ -130,4 +130,63 @@ M.error_table = {
     },
 }
 
-return M.error_table
+---Parse a line of text and extract error information using regex patterns
+---@param line string The line to parse
+---@return table|nil Error information with file, line, and col fields, or nil if no match
+function M.parse_line(line)
+    if not line or line == '' then
+        return nil
+    end
+
+    -- Try each error pattern in order
+    for pattern_name, pattern in pairs(M.error_table) do
+        if pattern.regex then
+            -- Use vim.fn.matchlist to get capture groups
+            local match = vim.fn.matchlist(line, pattern.regex)
+
+            if match and #match > 0 and match[1] ~= '' then
+                -- Extract file, line, and column from capture groups
+                local file, lnum, col
+
+                -- Iterate through captures to find file, line number, and column
+                for i = 2, #match do
+                    local v = match[i]
+                    if v and v ~= '' then
+                        -- Check if this looks like a file path
+                        if not file and (v:match('[/\\]') or v:match('%.%w+$')) then
+                            file = v
+                        -- Check if this looks like a line number
+                        elseif not lnum and v:match('^%d+$') then
+                            lnum = tonumber(v)
+                        -- Check if this looks like a column number
+                        elseif lnum and not col and v:match('^%d+$') then
+                            col = tonumber(v)
+                        end
+                    end
+                end
+
+                if file and lnum then
+                    return {
+                        file = file,
+                        line = lnum,
+                        col = col or 0,
+                    }
+                end
+            end
+        end
+    end
+
+    -- Fallback to simple pattern: file:line:col or file:line
+    local file, lnum, col = line:match('^([%w%./\\%-_]+):(%d+):?(%d*)')
+    if file and lnum then
+        return {
+            file = file,
+            line = tonumber(lnum),
+            col = (col and col ~= '' and tonumber(col)) or 0,
+        }
+    end
+
+    return nil
+end
+
+return M

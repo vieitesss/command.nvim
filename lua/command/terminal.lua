@@ -196,8 +196,16 @@ function M.follow_error()
 
     -- 5. Jump to line/column if available
     if error_info.line then
+        -- Get the total number of lines in the opened buffer
+        local buf = vim.api.nvim_get_current_buf()
+        local line_count = vim.api.nvim_buf_line_count(buf)
+
+        -- Clamp the line number to valid range (1 to line_count)
+        local target_line = math.max(1, math.min(error_info.line, line_count))
         local col = error_info.col or 0
-        vim.api.nvim_win_set_cursor(0, { error_info.line, col })
+
+        -- Set cursor position safely
+        vim.api.nvim_win_set_cursor(0, { target_line, col })
     end
 
     -- 6. Center view

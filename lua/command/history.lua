@@ -6,6 +6,20 @@ local config = require('command.config')
 local state = require('command.state')
 local history_migration = require('command.history_migration')
 
+---Reverse a table (fallback for vim.tbl_reverse if not available)
+---@param tbl table Table to reverse
+---@return table Reversed table
+local function tbl_reverse(tbl)
+    if vim.tbl_reverse then
+        return vim.tbl_reverse(tbl)
+    end
+    local reversed = {}
+    for i = #tbl, 1, -1 do
+        table.insert(reversed, tbl[i])
+    end
+    return reversed
+end
+
 -- ============================================================================
 -- Initialization & Persistence
 -- ============================================================================
@@ -214,21 +228,20 @@ function M.search(callback)
     end
 
     -- Prepare history in reverse order (newest first)
-    local history_list = vim.tbl_reverse(vim.deepcopy(state._history))
+    local history_list = tbl_reverse(vim.deepcopy(state._history))
 
     if #history_list == 0 then
         vim.notify('No history available', vim.log.levels.INFO)
         return
     end
 
-    -- Open fzf picker
-    fzf.fzf_exec(history_list, {
+    -- Get prompt window to position fzf below it
+    local prompt_win = state.get_window_by_name('prompt')
+    local fzf_opts = {
         prompt = 'History> ',
         winopts = {
-            height = 0.3,
+            height = 0.35,
             width = 0.5,
-            yoffset = 1, -- Position below prompt
-            row = 1,
         },
         actions = {
             default = function(selected)
@@ -237,7 +250,18 @@ function M.search(callback)
                 end
             end,
         },
-    })
+    }
+
+    -- Position below prompt if it exists, matching its dimensions
+    if prompt_win and vim.api.nvim_win_is_valid(prompt_win.win) then
+        local pos = vim.api.nvim_win_get_position(prompt_win.win)
+        fzf_opts.winopts.row = pos[1] + prompt_win.opts.height + 2
+        fzf_opts.winopts.col = pos[2]
+        fzf_opts.winopts.width = prompt_win.opts.width + 2
+        fzf_opts.winopts.relative = 'editor'
+    end
+
+    fzf.fzf_exec(history_list, fzf_opts)
 end
 
 ---Get all commands in history (copy)

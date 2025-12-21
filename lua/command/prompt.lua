@@ -61,6 +61,9 @@ function M.create(opts)
         return nil
     end
 
+    -- Set window-local options for text handling
+    vim.api.nvim_set_option_value('wrap', false, { win = win })
+
     -- 6. Register in state
     state.add_window({
         name = WINDOW_NAME,
@@ -268,7 +271,7 @@ function M.attach_keymaps(buf)
     local opts = { noremap = true, silent = true, buffer = buf }
 
     -- Get keymaps from config or use defaults
-    local keymaps = config.values.keymaps.prompt or {}
+    local keymaps = (config.values.keymaps and config.values.keymaps.prompt) or {}
 
     -- Apply insert/normal mode keymaps
     if keymaps.ni then
@@ -297,6 +300,12 @@ function M.attach_keymaps(buf)
     end
 
     if not keymaps.n or #keymaps.n == 0 then
+        vim.keymap.set('n', '<CR>', M.enter, opts)
+        vim.keymap.set('n', '<Up>', M.prev_history, opts)
+        vim.keymap.set('n', '<Down>', M.next_history, opts)
+        vim.keymap.set('n', '<C-f>', M.search_history, opts)
+        vim.keymap.set('n', '<C-e>', M.accept_ghost, opts)
+        vim.keymap.set('n', '<C-o>', M.toggle_cwd, opts)
         vim.keymap.set('n', '<Esc>', M.cancel, opts)
     end
 end

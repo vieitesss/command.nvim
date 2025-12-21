@@ -133,7 +133,6 @@ function M.remove_window(name)
     end
 
     if idx == 0 or not win then
-        utils.print_error('Could not remove a window with the name: ' .. name)
         return
     end
 
@@ -145,7 +144,7 @@ end
 ---Get a copy of the command history list.
 ---@return string[] commands List of commands
 function M.history_list()
-    return vim.deepcopy(M._history.list)
+    return vim.deepcopy(M._history)
 end
 
 ---Add a command to the history.
@@ -173,7 +172,7 @@ end
 ---Used when exiting history navigation mode.
 ---@return nil
 function M.reset_history_index()
-    M._history.index = #M._history.list + 1
+    M._history_index = #M._history + 1
 end
 
 -- ============================================================================

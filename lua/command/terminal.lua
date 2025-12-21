@@ -204,7 +204,7 @@ function M.attach_keymaps(buf)
     local opts = { noremap = true, silent = true, buffer = buf }
 
     -- Get keymaps from config or use defaults
-    local keymaps = config.values.keymaps.terminal or {}
+    local keymaps = (config.values.keymaps and config.values.keymaps.terminal) or {}
 
     -- In terminal mode, we can't intercept normal insert mode keys
     -- Use normal mode keymaps instead

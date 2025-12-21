@@ -221,6 +221,18 @@ function M.search(callback)
         return
     end
 
+    -- Save current mode to restore it later
+    local original_mode = vim.api.nvim_get_mode().mode
+
+    -- Helper function to restore mode
+    local function restore_mode()
+        vim.schedule(function()
+            if original_mode == 'i' then
+                vim.cmd.startinsert()
+            end
+        end)
+    end
+
     -- Get prompt window to position fzf below it
     local prompt_win = state.get_window_by_name('prompt')
     local fzf_opts = {
@@ -228,6 +240,7 @@ function M.search(callback)
         winopts = {
             height = 0.35,
             width = 0.5,
+            on_close = restore_mode,
         },
         actions = {
             default = function(selected)

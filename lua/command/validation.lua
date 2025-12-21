@@ -78,13 +78,13 @@ function M.validate_command(cmd)
     local warnings = M.check_dangerous_patterns(cmd)
 
     -- Require config lazily to avoid circular dependencies during lazy loading
-    local config = require 'command.config'
+    local config = require('command.config')
 
     if #warnings > 0 and config.values.validation.warn then
         -- Build warning message with command and confirmation prompt
         local warning_lines = {
             '[command.nvim] WARNING - Command contains potentially dangerous patterns:',
-            ''
+            '',
         }
         for i, warning in ipairs(warnings) do
             table.insert(warning_lines, '  ' .. i .. '. ' .. warning)

@@ -1,4 +1,4 @@
-local utils = require 'command.utils'
+local utils = require('command.utils')
 
 local M = {}
 
@@ -7,55 +7,57 @@ local M = {}
 ---@param context ExecutionContext The execution context
 ---@return string expanded_cmd The command with variables expanded
 function M.expand(cmd, context)
-    if not context then return cmd end
+    if not context then
+        return cmd
+    end
 
     local replacements = {
-        ["file"] = function()
+        ['file'] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
-            return vim.fn.fnamemodify(path, ":t")
+            return vim.fn.fnamemodify(path, ':t')
         end,
-        ["filePath"] = function()
+        ['filePath'] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
-            return vim.fn.fnamemodify(path, ":p")
+            return vim.fn.fnamemodify(path, ':p')
         end,
-        ["fileDir"] = function()
+        ['fileDir'] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
-            return vim.fn.fnamemodify(path, ":p:h")
+            return vim.fn.fnamemodify(path, ':p:h')
         end,
-        ["fileName"] = function()
+        ['fileName'] = function()
             local path = vim.api.nvim_buf_get_name(context.buf)
-            return vim.fn.fnamemodify(path, ":t:r")
+            return vim.fn.fnamemodify(path, ':t:r')
         end,
-        ["line"] = function()
+        ['line'] = function()
             return tostring(context.cursor[1])
         end,
-        ["col"] = function()
+        ['col'] = function()
             return tostring(context.cursor[2] + 1)
         end,
-        ["cwd"] = function()
+        ['cwd'] = function()
             return vim.fn.getcwd()
         end,
-        ["selection"] = function()
+        ['selection'] = function()
             return utils.get_visual_selection(context.buf)
-        end
+        end,
     }
 
     local function replace_var(key_with_modifier)
-        local key, modifier = key_with_modifier:match("([^:]+):?(.*)")
+        local key, modifier = key_with_modifier:match('([^:]+):?(.*)')
 
         local func = replacements[key]
         if func then
             local value = func()
-            if modifier == "sh" then
+            if modifier == 'sh' then
                 return vim.fn.shellescape(value)
             end
             return value
         end
-        return "${" .. key_with_modifier .. "}" -- return original string if key not found
+        return '${' .. key_with_modifier .. '}' -- return original string if key not found
     end
 
     -- Replace ${var} or ${var:modifier}
-    local expanded_cmd, _ = cmd:gsub("%${([%w_:]+)}", replace_var)
+    local expanded_cmd, _ = cmd:gsub('%${([%w_:]+)}', replace_var)
     return expanded_cmd
 end
 

@@ -34,74 +34,52 @@
 ---@field validation CommandConfigValidationOpts
 ---@field keymaps CommandConfigKeymaps
 
-local prompt_act = require 'command.actions.prompt'
-local terminal_act = require 'command.actions.terminal'
-
 local M = {}
 
 local defaults = {
     history = {
         max = 200,
-        picker = "fzf-lua"
+        picker = 'fzf-lua',
     },
     ui = {
         prompt = {
             max_width = 40,
-            ghost_text = true
+            ghost_text = true,
         },
         terminal = {
             height = 0.25,
-            split = "below"
-        }
+            split = 'below',
+        },
     },
     execution = {
-        cwd = "buffer"
+        cwd = 'buffer',
     },
     validation = {
-        warn = true
+        warn = true,
     },
-    keymaps = {
-        prompt = {
-            ni = {
-                { '<Up>', prompt_act.history_up },
-                { '<Down>', prompt_act.history_down },
-                { '<C-f>', prompt_act.search },
-                { '<CR>', prompt_act.enter },
-                { '<C-d>', prompt_act.cancel },
-                { '<C-e>', prompt_act.accept_ghost },
-                { '<C-o>', prompt_act.toggle_cwd },
-            },
-            n = {
-                { '<Esc>', prompt_act.cancel }
-            }
-        },
-        terminal = {
-            n = {
-                { '<CR>', terminal_act.follow_error }
-            }
-        }
-    }
 }
 
 M.values = vim.deepcopy(defaults)
 
 function M.setup(opts)
-    M.values = vim.tbl_deep_extend("force", M.values, opts or {})
+    M.values = vim.tbl_deep_extend('force', M.values, opts or {})
 
-    if M.values.execution.cwd ~= "buffer" and M.values.execution.cwd ~= "root" then
+    if M.values.execution.cwd ~= 'buffer' and M.values.execution.cwd ~= 'root' then
         vim.notify(
             "command.nvim: Invalid execution.cwd '" .. tostring(M.values.execution.cwd) .. "'. Defaulting to 'buffer'.",
             vim.log.levels.WARN
         )
-        M.values.execution.cwd = "buffer"
+        M.values.execution.cwd = 'buffer'
     end
 
-    if M.values.history.picker ~= "fzf-lua" then
+    if M.values.history.picker ~= 'fzf-lua' then
         vim.notify(
-            "command.nvim: Invalid history.picker '" .. tostring(M.values.history.picker) .. "'. Only 'fzf-lua' is supported. Defaulting to 'fzf-lua'.",
+            "command.nvim: Invalid history.picker '"
+                .. tostring(M.values.history.picker)
+                .. "'. Only 'fzf-lua' is supported. Defaulting to 'fzf-lua'.",
             vim.log.levels.WARN
         )
-        M.values.history.picker = "fzf-lua"
+        M.values.history.picker = 'fzf-lua'
     end
 end
 

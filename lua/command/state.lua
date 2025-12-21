@@ -16,15 +16,17 @@
 ---@field selection_start integer[]|nil Start of selection {line, col}
 ---@field selection_end integer[]|nil End of selection {line, col}
 
-local utils = require 'command.utils'
+local utils = require('command.utils')
 
 local M = {
     _history = {},
+    _history_index = 1,
     _has_run = false,
     _windows = {},
     _main_win = 0,
     _context = nil, ---@type ExecutionContext|nil
-    _cwd_mode = nil ---@type string|nil
+    _cwd_mode = nil, ---@type string|nil
+    _jobs = {}, ---@type table Job IDs of running commands
 }
 
 ---Set the main window to return to after command execution.
@@ -36,7 +38,7 @@ function M.set_main_win(win)
     if valid then
         M._main_win = win
     else
-        utils.print_error("The window " .. win .. "is not valid.")
+        utils.print_error('The window ' .. win .. 'is not valid.')
     end
 
     return valid
@@ -69,10 +71,10 @@ end
 ---Get the resolved current working directory based on mode and context.
 ---@return string cwd
 function M.get_resolved_cwd()
-    if M._cwd_mode == "buffer" and M._context and M._context.buf then
+    if M._cwd_mode == 'buffer' and M._context and M._context.buf then
         local file = vim.api.nvim_buf_get_name(M._context.buf)
-        if file ~= "" then
-            local dir = vim.fn.fnamemodify(file, ":h")
+        if file ~= '' then
+            local dir = vim.fn.fnamemodify(file, ':h')
             if vim.fn.isdirectory(dir) == 1 then
                 return dir
             end
@@ -131,7 +133,6 @@ function M.remove_window(name)
     end
 
     if idx == 0 or not win then
-        utils.print_error("Could not remove a window with the name: " .. name)
         return
     end
 
@@ -143,7 +144,7 @@ end
 ---Get a copy of the command history list.
 ---@return string[] commands List of commands
 function M.history_list()
-    return vim.deepcopy(M._history.list)
+    return vim.deepcopy(M._history)
 end
 
 ---Add a command to the history.
@@ -171,7 +172,85 @@ end
 ---Used when exiting history navigation mode.
 ---@return nil
 function M.reset_history_index()
-    M._history.index = #M._history.list + 1
+    M._history_index = #M._history + 1
+end
+
+-- ============================================================================
+-- Job Tracking
+-- ============================================================================
+
+---Add a job ID to tracking.
+---@param job_id integer Job ID to track
+---@return nil
+function M.add_job(job_id)
+    M._jobs[job_id] = true
+end
+
+---Remove a job ID from tracking.
+---@param job_id integer Job ID to remove
+---@return nil
+function M.remove_job(job_id)
+    M._jobs[job_id] = nil
+end
+
+-- ============================================================================
+-- Cleanup
+-- ============================================================================
+
+---Cleanup a window when it's closed (called by WinClosed autocmd).
+---@param win_id integer Window ID that was closed
+---@return nil
+function M.cleanup_window(win_id)
+    for idx, window in ipairs(M._windows) do
+        if window.win == win_id then
+            table.remove(M._windows, idx)
+            break
+        end
+    end
+end
+
+---Full cleanup of all state (windows, jobs, etc).
+---@param force boolean Force delete buffers (optional)
+---@return nil
+function M.cleanup(force)
+    force = force or false
+
+    -- Close all windows
+    for _, window in ipairs(M._windows) do
+        if vim.api.nvim_win_is_valid(window.win) then
+            vim.api.nvim_win_close(window.win, force)
+        end
+        if vim.api.nvim_buf_is_valid(window.buf) then
+            vim.api.nvim_buf_delete(window.buf, { force = force })
+        end
+    end
+
+    -- Abort all jobs
+    for job_id, _ in pairs(M._jobs) do
+        pcall(function()
+            vim.fn.jobstop(job_id)
+        end)
+    end
+
+    -- Clear all state
+    M._windows = {}
+    M._jobs = {}
+    M._context = nil
+    M._has_run = false
+end
+
+---Setup autocommands for automatic cleanup.
+---@return nil
+function M.setup_autocmds()
+    local group = vim.api.nvim_create_augroup('command_state', { clear = true })
+
+    vim.api.nvim_create_autocmd('WinClosed', {
+        group = group,
+        callback = function(args)
+            local win_id = tonumber(args.match)
+            M.cleanup_window(win_id)
+        end,
+    })
 end
 
 return M

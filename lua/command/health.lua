@@ -7,13 +7,13 @@ local M = {}
 local function check_shell()
     vim.health.info('Checking shell configuration...')
 
-    local shell = vim.env.SHELL or "/bin/sh"
+    local shell = vim.env.SHELL or '/bin/sh'
 
     if vim.fn.executable(shell) == 1 then
         vim.health.ok('Shell found: ' .. shell)
     else
         vim.health.error('Shell not found: ' .. shell, {
-            'Install ' .. shell .. ' or set SHELL environment variable'
+            'Install ' .. shell .. ' or set SHELL environment variable',
         })
     end
 end
@@ -39,13 +39,13 @@ local function check_picker()
         else
             vim.health.warn('fzf-lua is not installed', {
                 'Install fzf-lua if you want to use history search',
-                'GitHub: https://github.com/ibhagwan/fzf-lua'
+                'GitHub: https://github.com/ibhagwan/fzf-lua',
             })
         end
     elseif picker ~= nil then
         vim.health.warn('Unknown picker: ' .. tostring(picker), {
             'Supported pickers: fzf-lua',
-            'Verify your configuration'
+            'Verify your configuration',
         })
     end
 end
@@ -55,14 +55,14 @@ end
 local function check_history_storage()
     vim.health.info('Checking history storage...')
 
-    local ok, _ = pcall(require, 'command.history.storage')
+    local ok, history = pcall(require, 'command.history')
     if not ok then
-        vim.health.warn('Could not load history storage module')
+        vim.health.warn('Could not load history module')
         return
     end
 
-    local data_dir = vim.fn.stdpath('data')
-    local history_dir = data_dir .. '/command.nvim'
+    local history_path = history.get_history_path()
+    local history_dir = vim.fn.fnamemodify(history_path, ':h')
 
     -- Check if directory exists or can be created
     if vim.fn.isdirectory(history_dir) == 1 then
@@ -75,7 +75,7 @@ local function check_history_storage()
         else
             vim.health.error('Cannot create history directory: ' .. history_dir, {
                 'Check directory permissions',
-                'Ensure ' .. data_dir .. ' is writable'
+                'Ensure parent directory is writable',
             })
             return
         end
@@ -93,7 +93,7 @@ local function check_history_storage()
         vim.health.error('History directory is not writable: ' .. history_dir, {
             'Fix directory permissions',
             'Run: chmod 755 ' .. history_dir,
-            'Write test failed: ' .. tostring(write_err)
+            'Write test failed: ' .. tostring(write_err),
         })
     end
 end

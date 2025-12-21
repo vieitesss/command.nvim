@@ -61,8 +61,16 @@ function M.create(opts)
         return nil
     end
 
-    -- Set window-local options for text handling
+    -- Set window-local options
     vim.api.nvim_set_option_value('wrap', false, { win = win })
+    
+    -- Explicitly disable statusline to prevent it from being shown after fzf
+    vim.api.nvim_win_set_option(win, 'statusline', '')
+    
+    -- Ensure minimal UI is applied
+    local win_config = vim.api.nvim_win_get_config(win)
+    win_config.style = 'minimal'
+    vim.api.nvim_win_set_config(win, win_config)
 
     -- 6. Register in state
     state.add_window({
@@ -218,6 +226,32 @@ function M.search_history()
     if not window then
         return
     end
+
+    -- Function to reset the window appearance after fzf closes
+    local function reset_window_appearance()
+        if vim.api.nvim_win_is_valid(window.win) then
+            -- Reset window options that might have been changed by fzf
+            vim.api.nvim_win_set_option(window.win, 'statusline', '')
+            
+            -- Reapply the style=minimal setting
+            local win_config = vim.api.nvim_win_get_config(window.win)
+            win_config.style = 'minimal'
+            vim.api.nvim_win_set_config(window.win, win_config)
+        end
+    end
+
+    -- Set up a one-time autocmd to reset window after returning to prompt
+    local autocmd_id = vim.api.nvim_create_autocmd('BufWinEnter', {
+        callback = function(args)
+            if args.buf == window.buf then
+                -- Reset window appearance
+                vim.defer_fn(reset_window_appearance, 1)
+                -- Remove this autocmd after it fires once
+                vim.api.nvim_del_autocmd(autocmd_id)
+            end
+        end,
+        once = true,
+    })
 
     history.search(function(selected_cmd)
         if selected_cmd and vim.api.nvim_buf_is_valid(window.buf) then

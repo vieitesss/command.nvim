@@ -24,26 +24,21 @@ local PROMPT_HEIGHT = 1
 function M.create(opts)
     opts = opts or {}
 
-    -- 1. Create buffer
-    local buf = vim.api.nvim_create_buf(true, true)
+    local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = buf })
     vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
 
-    -- 2. Merge with config defaults
     local max_width = opts.max_width or config.values.ui.prompt.max_width or 40
     local width = math.max(max_width, math.floor(vim.o.columns * 0.5))
     local height = PROMPT_HEIGHT
 
-    -- 3. Calculate position (centered)
     local row = math.floor((vim.o.lines - height) / 2 - 1)
     local col = math.floor((vim.o.columns - width) / 2)
 
-    -- 4. Get title (cwd)
     local cwd = state.get_resolved_cwd()
     cwd = vim.fn.fnamemodify(cwd, ':~')
     local title = ' ' .. cwd .. ' '
 
-    -- 5. Create floating window
     local win = vim.api.nvim_open_win(buf, true, {
         title = title,
         title_pos = 'right',
@@ -61,13 +56,8 @@ function M.create(opts)
         return nil
     end
 
-    -- Set window-local options for text handling
     vim.api.nvim_set_option_value('wrap', false, { win = win })
-    
-    -- Completely remove statusline for this window
-    vim.api.nvim_set_option_value('laststatus', 0, { win = win })
 
-    -- 6. Register in state
     state.add_window({
         name = WINDOW_NAME,
         buf = buf,
@@ -79,10 +69,8 @@ function M.create(opts)
         },
     })
 
-    -- 7. Attach keymaps
     M.attach_keymaps(buf)
 
-    -- 8. Attach ghost text if enabled
     if config.values.ui.prompt.ghost_text then
         ghost_text.attach(buf)
     end
@@ -130,17 +118,13 @@ function M.enter()
         return
     end
 
-    -- 1. Get command text
     local lines = vim.api.nvim_buf_get_lines(window.buf, 0, -1, false)
     local cmd = table.concat(lines, '\n')
 
-    -- 2. Trim whitespace
     cmd = cmd:gsub('^%s+', ''):gsub('%s+$', '')
 
-    -- 3. Clear ghost text
     ghost_text.clear(window.buf)
 
-    -- 4. Validate command
     if cmd == '' then
         utils.print_error('No command was provided')
         return
@@ -150,19 +134,15 @@ function M.enter()
         return
     end
 
-    -- 5. Add to history (skip if identical to last)
     local history_list = state.history_list()
     if cmd ~= '' and history_list[#history_list] ~= cmd then
         history.add(cmd)
     end
 
-    -- 6. Reset history index
     state.reset_history_index()
 
-    -- 7. Close prompt
     M.close()
 
-    -- 8. Execute command
     state._has_run = true
     terminal.create(config.values.ui.terminal)
     executor.run_command(cmd)

@@ -63,10 +63,10 @@ function M.create(opts)
 
     -- Set window-local options
     vim.api.nvim_set_option_value('wrap', false, { win = win })
-    
+
     -- Explicitly disable statusline to prevent it from being shown after fzf
     vim.api.nvim_win_set_option(win, 'statusline', '')
-    
+
     -- Ensure minimal UI is applied
     local win_config = vim.api.nvim_win_get_config(win)
     win_config.style = 'minimal'
@@ -228,27 +228,27 @@ function M.search_history()
     end
 
     -- Save current content and options
-    local content = ""
+    local content = ''
     local win_opts = {}
-    
+
     if vim.api.nvim_buf_is_valid(window.buf) then
         local lines = vim.api.nvim_buf_get_lines(window.buf, 0, -1, false)
-        content = lines[1] or ""
+        content = lines[1] or ''
         win_opts = window.opts or {}
     end
-    
+
     -- Close the window to avoid statusline leaking
     if vim.api.nvim_win_is_valid(window.win) then
         vim.api.nvim_win_close(window.win, true)
     end
-    
+
     -- Remove from state
-    state.remove_window_by_name(WINDOW_NAME)
+    state.remove_window(WINDOW_NAME)
 
     history.search(function(selected_cmd)
         -- Recreate the prompt window
         local new_win = M.create(win_opts)
-        
+
         if new_win then
             -- Set the prompt content
             if selected_cmd then
@@ -256,7 +256,7 @@ function M.search_history()
             else
                 utils.set_cmd_prompt(new_win.buf, new_win.win, content)
             end
-            
+
             -- Attach ghost text if enabled
             if config.values.ui.prompt.ghost_text then
                 ghost_text.update(new_win.buf)

@@ -249,7 +249,7 @@ function M.search_history()
     local function on_history_selection(selected_cmd)
         -- Always recreate the window
         local new_win = M.create(win_opts)
-        
+
         if new_win then
             -- Set the prompt content
             if selected_cmd then
@@ -257,14 +257,14 @@ function M.search_history()
             else
                 utils.set_cmd_prompt(new_win.buf, new_win.win, content)
             end
-            
+
             -- Attach ghost text if enabled
             if config.values.ui.prompt.ghost_text then
                 ghost_text.update(new_win.buf)
             end
         end
     end
-    
+
     -- Call history search with the callback
     history.search(on_history_selection)
 end

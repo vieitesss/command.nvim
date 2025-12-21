@@ -227,38 +227,39 @@ function M.search_history()
         return
     end
 
-    -- Function to reset the window appearance after fzf closes
-    local function reset_window_appearance()
-        if vim.api.nvim_win_is_valid(window.win) then
-            -- Reset window options that might have been changed by fzf
-            vim.api.nvim_win_set_option(window.win, 'statusline', '')
-            
-            -- Reapply the style=minimal setting
-            local win_config = vim.api.nvim_win_get_config(window.win)
-            win_config.style = 'minimal'
-            vim.api.nvim_win_set_config(window.win, win_config)
-        end
+    -- Save current content and options
+    local content = ""
+    local win_opts = {}
+    
+    if vim.api.nvim_buf_is_valid(window.buf) then
+        local lines = vim.api.nvim_buf_get_lines(window.buf, 0, -1, false)
+        content = lines[1] or ""
+        win_opts = window.opts or {}
     end
-
-    -- Set up a one-time autocmd to reset window after returning to prompt
-    local autocmd_id = vim.api.nvim_create_autocmd('BufWinEnter', {
-        callback = function(args)
-            if args.buf == window.buf then
-                -- Reset window appearance
-                vim.defer_fn(reset_window_appearance, 1)
-                -- Remove this autocmd after it fires once
-                vim.api.nvim_del_autocmd(autocmd_id)
-            end
-        end,
-        once = true,
-    })
+    
+    -- Close the window to avoid statusline leaking
+    if vim.api.nvim_win_is_valid(window.win) then
+        vim.api.nvim_win_close(window.win, true)
+    end
+    
+    -- Remove from state
+    state.remove_window_by_name(WINDOW_NAME)
 
     history.search(function(selected_cmd)
-        if selected_cmd and vim.api.nvim_buf_is_valid(window.buf) then
-            utils.set_cmd_prompt(window.buf, window.win, selected_cmd)
-
+        -- Recreate the prompt window
+        local new_win = M.create(win_opts)
+        
+        if new_win then
+            -- Set the prompt content
+            if selected_cmd then
+                utils.set_cmd_prompt(new_win.buf, new_win.win, selected_cmd)
+            else
+                utils.set_cmd_prompt(new_win.buf, new_win.win, content)
+            end
+            
+            -- Attach ghost text if enabled
             if config.values.ui.prompt.ghost_text then
-                ghost_text.update(window.buf)
+                ghost_text.update(new_win.buf)
             end
         end
     end)

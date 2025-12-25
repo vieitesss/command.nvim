@@ -212,6 +212,69 @@ function M.follow_error()
     vim.cmd('normal! zz')
 end
 
+---Send terminal output to quickfix list
+---Adds all terminal output to quickfix, detecting file paths where possible
+function M.send_to_quickfix()
+    local window = state.get_window_by_name(WINDOW_NAME)
+    if not window or not vim.api.nvim_buf_is_valid(window.buf) then
+        return
+    end
+
+    -- 1. Get all lines from terminal buffer
+    local lines = vim.api.nvim_buf_get_lines(window.buf, 0, -1, false)
+
+    -- 2. Parse each line and build quickfix list
+    local qf_list = {}
+    for line_num, line in ipairs(lines) do
+        -- Trim whitespace
+        local trimmed = line:gsub('^%s+', ''):gsub('%s+$', '')
+
+        -- Skip empty lines
+        if trimmed ~= '' then
+            -- First try error parser (for errors with line:col)
+            local error_info = error_parser.parse_line(line)
+
+            if error_info and error_info.file then
+                table.insert(qf_list, {
+                    filename = error_info.file,
+                    lnum = error_info.line or 1,
+                    col = error_info.col or 0,
+                    text = line,
+                })
+            else
+                -- Check if this looks like a plain file path
+                -- Match paths that look like files (contain / or . or are relative/absolute paths)
+                if trimmed:match('^[%w%.%-%_/~]+') and vim.fn.filereadable(trimmed) == 1 then
+                    table.insert(qf_list, {
+                        filename = trimmed,
+                        lnum = 1,
+                        col = 0,
+                        text = line,
+                    })
+                else
+                    -- Add all other non-empty lines as text-only entries
+                    table.insert(qf_list, {
+                        text = line,
+                    })
+                end
+            end
+        end
+    end
+
+    -- 3. Set the quickfix list
+    if #qf_list > 0 then
+        vim.fn.setqflist(qf_list, 'r')
+
+        -- Close terminal before opening quickfix
+        M.close()
+
+        vim.cmd('copen')
+        vim.notify(string.format('Added %d items to quickfix list', #qf_list), vim.log.levels.INFO)
+    else
+        vim.notify('No output to add to quickfix list', vim.log.levels.WARN)
+    end
+end
+
 -- ============================================================================
 -- Keymaps
 -- ============================================================================
@@ -236,11 +299,12 @@ function M.attach_keymaps(buf)
     -- Default keymaps if not configured
     if not keymaps.n or #keymaps.n == 0 then
         vim.keymap.set('n', '<CR>', M.follow_error, opts)
+        vim.keymap.set('n', '<C-q>', M.send_to_quickfix, opts)
         vim.keymap.set('n', 'q', M.close, opts)
     end
 
-    -- Also add terminal mode keymap for quick close
-    vim.keymap.set('t', '<C-q>', M.close, opts)
+    -- Terminal mode keymaps
+    vim.keymap.set('t', '<C-q>', M.send_to_quickfix, opts)
 end
 
 return M

@@ -11,6 +11,7 @@ Neovim plugin that allows you to:
 - Get completion suggestions as virtual text while typing.
 - Validate commands for potentially dangerous patterns (command substitution, piping to `rm`/`dd`, redirects to system files, etc.) with optional warnings and confirmation prompts.
 - Follow compilation errors for some languages (credits to [compile-mode.nvim](https://github.com/ej-shafran/compile-mode.nvim/tree/main)).
+- Send terminal output to the quickfix list for easy navigation and file jumping.
 
 # Installation
 
@@ -80,7 +81,9 @@ defaults = {
         terminal = {
             -- WARNING: There is no `ni` in terminal mode
             n = {
-                { '<CR>', terminal_act.follow_error }
+                { '<CR>', terminal_act.follow_error },
+                { '<C-q>', terminal_act.send_to_quickfix },
+                { 'q', terminal_act.close }
             }
         }
     }
@@ -156,3 +159,22 @@ require('command').setup({
 ```
 
 When warnings are enabled (default), the plugin will display the dangerous pattern(s) detected and the full command, then prompt you to confirm execution with `(y/n):`.
+
+## Quickfix Integration
+
+Press `<C-q>` in the terminal window (normal or terminal mode) to send all terminal output to the quickfix list. This is useful for:
+
+- Navigating file listings from commands like `fd`, `find`, or `ls`
+- Jumping to compilation errors and warnings
+- Browsing git log output
+- Working with grep results
+
+The plugin intelligently detects:
+- **Error messages** with file paths and line numbers (e.g., `file.lua:42:10: error`) - opens at the specific location
+- **Plain file paths** (e.g., `lua/command/terminal.lua`) - opens at line 1
+- **Any other output** - added as text-only entries for reference
+
+After pressing `<C-q>`, the terminal closes and the quickfix window opens. Use:
+- `<CR>` to open files at the detected location
+- `:cnext` / `:cprev` (or `:cn` / `:cp`) to navigate between entries
+- `:copen` / `:cclose` to toggle the quickfix window

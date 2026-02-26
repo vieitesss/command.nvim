@@ -1,4 +1,5 @@
 local utils = require('command.utils')
+local state = require('command.state')
 
 local M = {}
 
@@ -35,7 +36,7 @@ function M.expand(cmd, context)
             return tostring(context.cursor[2] + 1)
         end,
         ['cwd'] = function()
-            return vim.fn.getcwd()
+            return state.get_resolved_cwd()
         end,
         ['selection'] = function()
             return utils.get_visual_selection(context.buf)

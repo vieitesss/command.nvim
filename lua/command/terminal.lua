@@ -133,9 +133,11 @@ function M.send_command(cmd)
 
     -- Get shell and use interactive mode
     local shell = vim.env.SHELL or '/bin/sh'
+    local cwd = state.get_resolved_cwd()
 
-    -- Start terminal and run command
+    -- Start terminal and run command in resolved cwd
     local job_id = vim.fn.termopen({ shell, '-ic', cmd }, {
+        cwd = cwd,
         on_exit = function(jid, exit_code)
             M.on_job_exit(jid, exit_code)
         end,

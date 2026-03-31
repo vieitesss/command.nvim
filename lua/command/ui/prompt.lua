@@ -2,13 +2,37 @@ local config = require('command.config')
 local ghost_text = require('command.ui.ghost_text')
 local session = require('command.session')
 
+---@class CommandPromptCreateOpts: CommandConfigPromptOpts
+---@field context ExecutionContext|nil Source context used by prompt actions and title rendering
+
+---@class CommandPromptWindowOpts: CommandWindowOpts
+---@field width integer Prompt window width
+---@field height integer Prompt window height
+---@field max_width integer Maximum prompt width used for layout
+---@field context ExecutionContext|nil Source context associated with the prompt
+
+---@class CommandPromptWindow: Window
+---@field name 'prompt'
+---@field opts CommandPromptWindowOpts
+
+---@class CommandPrompt
+---@field create fun(opts: CommandPromptCreateOpts|nil, actions: table): CommandPromptWindow|nil
+---@field get fun(): CommandPromptWindow|nil
+---@field focus fun(context: ExecutionContext|nil): boolean
+---@field update_title fun()
+---@field close fun()
+---@field set_text fun(command: string)
+---@field get_text fun(): string
+
+---@type CommandPrompt
 local M = {}
 
 local WINDOW_NAME = 'prompt'
 local PROMPT_HEIGHT = 1
 
-local function build_title()
-    local cwd = vim.fn.fnamemodify(session.get_resolved_cwd(), ':~')
+---@param context ExecutionContext|nil
+local function build_title(context)
+    local cwd = vim.fn.fnamemodify(session.get_resolved_cwd(context), ':~')
     return ' ' .. cwd .. ' '
 end
 
@@ -46,11 +70,12 @@ local function attach_default_keymaps(buf, actions)
     end
 end
 
----@param opts table|nil
+---@param opts CommandPromptCreateOpts|nil
 ---@param actions table
----@return table|nil
+---@return CommandPromptWindow|nil
 function M.create(opts, actions)
-    opts = opts or {}
+    ---@type CommandPromptCreateOpts
+    local create_opts = opts or {}
 
     if M.get() then
         M.close()
@@ -60,14 +85,14 @@ function M.create(opts, actions)
     vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = buf })
     vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
 
-    local max_width = opts.max_width or config.values.ui.prompt.max_width or 40
+    local max_width = create_opts.max_width or config.values.ui.prompt.max_width or 40
     local width = math.max(max_width, math.floor(vim.o.columns * 0.5))
     local height = PROMPT_HEIGHT
     local row = math.floor((vim.o.lines - height) / 2 - 1)
     local col = math.floor((vim.o.columns - width) / 2)
 
     local win = vim.api.nvim_open_win(buf, true, {
-        title = build_title(),
+        title = build_title(create_opts.context),
         title_pos = 'right',
         relative = 'editor',
         width = width,
@@ -85,7 +110,8 @@ function M.create(opts, actions)
 
     vim.api.nvim_set_option_value('wrap', false, { win = win })
 
-    session.register_window({
+    ---@type CommandPromptWindow
+    local window = {
         name = WINDOW_NAME,
         buf = buf,
         win = win,
@@ -93,8 +119,11 @@ function M.create(opts, actions)
             width = width,
             height = height,
             max_width = max_width,
+            context = create_opts.context,
         },
-    })
+    }
+
+    session.register_window(window)
 
     attach_default_keymaps(buf, actions)
 
@@ -102,17 +131,26 @@ function M.create(opts, actions)
         ghost_text.attach(buf)
     end
 
-    return { buf = buf, win = win }
+    return window
 end
 
----@return table|nil
+---@return CommandPromptWindow|nil
 function M.get()
-    return session.get_window(WINDOW_NAME)
+    ---@type CommandPromptWindow|nil
+    local window = session.get_window(WINDOW_NAME)
+    return window
 end
 
-function M.focus()
+---@param context ExecutionContext|nil
+function M.focus(context)
     local window = M.get()
     if window and vim.api.nvim_win_is_valid(window.win) then
+        if context then
+            window.opts = window.opts or {}
+            window.opts.context = context
+            M.update_title()
+        end
+
         vim.api.nvim_set_current_win(window.win)
         vim.cmd('startinsert')
         return true
@@ -124,7 +162,8 @@ end
 function M.update_title()
     local window = M.get()
     if window and vim.api.nvim_win_is_valid(window.win) then
-        vim.api.nvim_win_set_config(window.win, { title = build_title() })
+        local context = window.opts and window.opts.context or nil
+        vim.api.nvim_win_set_config(window.win, { title = build_title(context) })
     end
 end
 

@@ -7,13 +7,23 @@ local terminal = require('command.ui.terminal')
 local terminal_actions = require('command.actions.terminal')
 local validation = require('command.execution.validation')
 
+---@class CommandRunOpts
+---@field context ExecutionContext|nil Context used for expansion and cwd resolution
+---@field before_execute fun()|nil Callback run before creating the terminal
+---@field record_history boolean|nil When false, skip adding the command to history
+
+---@class CommandExecutor
+---@field run fun(cmd: string, opts: CommandRunOpts|nil): boolean
+
+---@type CommandExecutor
 local M = {}
 
 ---@param cmd string
----@param opts table|nil
+---@param opts CommandRunOpts|nil
 ---@return boolean
 function M.run(cmd, opts)
-    opts = opts or {}
+    ---@type CommandRunOpts
+    local run_opts = opts or {}
 
     local normalized = (cmd or ''):gsub('^%s+', ''):gsub('%s+$', '')
     if normalized == '' then
@@ -21,28 +31,37 @@ function M.run(cmd, opts)
         return false
     end
 
-    local context = opts.context or session.get_context()
+    local context = run_opts.context
+    if not context then
+        notify.error('Could not resolve execution context')
+        return false
+    end
+
     local expanded = expansion.expand(normalized, context)
 
     if not validation.validate_command(expanded) then
         return false
     end
 
-    if opts.before_execute then
-        opts.before_execute()
+    if run_opts.before_execute then
+        run_opts.before_execute()
     end
 
-    if opts.record_history ~= false then
+    if run_opts.record_history ~= false then
         history.add(normalized)
     end
 
-    local terminal_window = terminal.create(config.values.ui.terminal, terminal_actions)
+    local terminal_opts = vim.tbl_extend('force', {}, config.values.ui.terminal or {}, {
+        context = context,
+    })
+
+    local terminal_window = terminal.create(terminal_opts, terminal_actions)
     if not terminal_window then
         notify.error('Could not create terminal window')
         return false
     end
 
-    if not terminal.send_command(expanded) then
+    if not terminal.send_command(expanded, context) then
         notify.error('Could not create terminal job')
         return false
     end

@@ -1,8 +1,13 @@
+---@class CommandWindowOpts
+---@field context ExecutionContext|nil Source context associated with a tracked UI window
+
 ---@class Window
 ---@field name string Window identifier
 ---@field buf integer Buffer handle
 ---@field win integer Window handle
----@field opts table Window options
+---@field opts CommandWindowOpts|nil Window options
+---@field job_id integer|nil Terminal job handle
+---@field exit_code integer|nil Terminal job exit code
 
 ---@class ExecutionContext
 ---@field buf integer Buffer handle
@@ -10,12 +15,15 @@
 ---@field cursor integer[] Cursor position {line, col}
 ---@field mode string Current mode
 
+---@class CommandUnregisterWindowOpts
+---@field close boolean|nil Close the tracked window
+---@field delete_buffer boolean|nil Delete the tracked buffer
+
 local notify = require('command.util.notify')
 
 local M = {
     _windows = {},
     _jobs = {},
-    _context = nil, ---@type ExecutionContext|nil
     _cwd_mode = nil, ---@type string|nil
     _has_run = false,
 }
@@ -30,27 +38,39 @@ local function find_window(name)
     return nil, nil
 end
 
+---@param buf integer
+---@param win integer
+---@return ExecutionContext|nil
+local function find_window_context(buf, win)
+    for _, window in ipairs(M._windows) do
+        if window.buf == buf or window.win == win then
+            local opts = window.opts or {}
+            if opts.context then
+                return opts.context
+            end
+        end
+    end
+
+    return nil
+end
+
 ---@return ExecutionContext
 function M.capture_context()
+    local buf = vim.api.nvim_get_current_buf()
+    local win = vim.api.nvim_get_current_win()
+    local window_context = find_window_context(buf, win)
+    if window_context then
+        return window_context
+    end
+
     local ctx = {
-        buf = vim.api.nvim_get_current_buf(),
-        win = vim.api.nvim_get_current_win(),
+        buf = buf,
+        win = win,
         cursor = vim.api.nvim_win_get_cursor(0),
         mode = vim.api.nvim_get_mode().mode,
     }
 
-    M.set_context(ctx)
     return ctx
-end
-
----@param ctx ExecutionContext
-function M.set_context(ctx)
-    M._context = ctx
-end
-
----@return ExecutionContext|nil
-function M.get_context()
-    return M._context
 end
 
 ---@param mode string
@@ -63,10 +83,11 @@ function M.get_cwd_mode()
     return M._cwd_mode
 end
 
+---@param context ExecutionContext|nil
 ---@return string
-function M.get_resolved_cwd()
-    if M._cwd_mode == 'buffer' and M._context and M._context.buf then
-        local file = vim.api.nvim_buf_get_name(M._context.buf)
+function M.get_resolved_cwd(context)
+    if M._cwd_mode == 'buffer' and context and context.buf then
+        local file = vim.api.nvim_buf_get_name(context.buf)
         if file ~= '' then
             local dir = vim.fn.fnamemodify(file, ':h')
             if vim.fn.isdirectory(dir) == 1 then
@@ -110,10 +131,11 @@ function M.get_window(name)
 end
 
 ---@param name string
----@param opts table|nil
+---@param opts CommandUnregisterWindowOpts|nil
 ---@return Window|nil
 function M.unregister_window(name, opts)
-    opts = opts or {}
+    ---@type CommandUnregisterWindowOpts
+    local window_opts = opts or {}
 
     local idx, window = find_window(name)
     if not idx or not window then
@@ -122,11 +144,11 @@ function M.unregister_window(name, opts)
 
     table.remove(M._windows, idx)
 
-    if opts.close ~= false and window.win and vim.api.nvim_win_is_valid(window.win) then
+    if window_opts.close ~= false and window.win and vim.api.nvim_win_is_valid(window.win) then
         pcall(vim.api.nvim_win_close, window.win, true)
     end
 
-    if opts.delete_buffer ~= false and window.buf and vim.api.nvim_buf_is_valid(window.buf) then
+    if window_opts.delete_buffer ~= false and window.buf and vim.api.nvim_buf_is_valid(window.buf) then
         pcall(vim.api.nvim_buf_delete, window.buf, { force = true })
     end
 
@@ -162,7 +184,6 @@ function M.cleanup(force)
 
     M._windows = {}
     M._jobs = {}
-    M._context = nil
     M._cwd_mode = nil
     M._has_run = false
 

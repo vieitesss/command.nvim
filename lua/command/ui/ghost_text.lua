@@ -1,18 +1,12 @@
 ---@class CommandGhostText
----Virtual text completion suggestions for command prompt
 
-local M = {}
 local config = require('command.config')
 local history = require('command.history')
 
+local M = {}
+
 local ns_id = vim.api.nvim_create_namespace('command_ghost_text')
 
--- ============================================================================
--- Lifecycle
--- ============================================================================
-
----Attaches ghost text to prompt buffer
----Sets up autocommands for updates
 ---@param buf integer Buffer ID
 function M.attach(buf)
     if not config.values.ui.prompt.ghost_text then
@@ -48,11 +42,6 @@ function M.attach(buf)
     M.update(buf)
 end
 
--- ============================================================================
--- Suggestion Management
--- ============================================================================
-
----Updates ghost text based on current prompt content
 ---@param buf integer Buffer ID
 function M.update(buf)
     if not vim.api.nvim_buf_is_valid(buf) then
@@ -65,7 +54,6 @@ function M.update(buf)
     end
 
     local prefix = lines[1]
-
     local suggestion = history.get_suggestions(prefix)
 
     vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
@@ -81,7 +69,6 @@ function M.update(buf)
     end
 end
 
----Accepts the ghost text suggestion
 ---@param buf integer Buffer ID
 function M.accept(buf)
     if not vim.api.nvim_buf_is_valid(buf) then
@@ -110,7 +97,6 @@ function M.accept(buf)
     end
 end
 
----Clears ghost text from buffer
 ---@param buf integer Buffer ID
 function M.clear(buf)
     if vim.api.nvim_buf_is_valid(buf) then
@@ -118,7 +104,6 @@ function M.clear(buf)
     end
 end
 
----Detaches ghost text from buffer
 ---@param buf integer Buffer ID
 function M.detach(buf)
     M.clear(buf)

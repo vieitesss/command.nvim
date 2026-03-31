@@ -2,11 +2,11 @@
 
 Neovim plugin that allows you to:
 - Type a command you want to run and execute it directly in a terminal inside Neovim.
-    - You can use your shell configuration (e.g., aliases, functions).
+  You can use your shell configuration (e.g., aliases, functions).
 - Keep a history of executed commands and easily access them.
 - Re-execute the last executed command with a single command.
 - Search through the history of executed commands using:
-    - fzf-lua
+  fzf-lua
 - Use context variables in your commands (e.g., `${file}`, `${line}`, `${selection}`) to reference the current editor state.
 - Get completion suggestions as virtual text while typing.
 - Validate commands for potentially dangerous patterns (command substitution, piping to `rm`/`dd`, redirects to system files, etc.) with optional warnings and confirmation prompts.
@@ -19,7 +19,7 @@ Neovim plugin that allows you to:
 
 ```lua
 vim.pack.add({
-    { src = "https://github.com/vieitesss/command.nvim" }
+    { src = "https://github.com/vieitesss/command.nvim" },
 })
 
 require('command').setup()
@@ -28,7 +28,6 @@ require('command').setup()
 ## lazy.nvim
 
 ```lua
-
 return {
     "vieitesss/command.nvim",
     lazy = false,
@@ -41,58 +40,69 @@ return {
 ```lua
 local prompt_act = require 'command.actions.prompt'
 local terminal_act = require 'command.actions.terminal'
-defaults = {
+
+require('command').setup({
     history = {
         max = 200,
-        picker = "fzf-lua"
+        picker = 'fzf-lua',
     },
     ui = {
         prompt = {
             max_width = 40,
-            ghost_text = true
+            ghost_text = true,
         },
         terminal = {
             height = 0.25,
-            split = "below"
-        }
+            split = 'below',
+        },
     },
     execution = {
-        cwd = "buffer" -- 'buffer' | 'root'
+        cwd = 'buffer', -- 'buffer' | 'root'
     },
     validation = {
-        warn = true  -- Show warnings for potentially dangerous patterns
+        warn = true,
     },
     keymaps = {
         prompt = {
-            -- WARNING: There is no `i` in prompt mode
-            ni = { -- normal and insert modes
-                { '<Up>', prompt_act.history_up },
-                { '<Down>', prompt_act.history_down },
-                { '<C-f>', prompt_act.search },
+            ni = {
+                { '<Up>', prompt_act.prev_history },
+                { '<Down>', prompt_act.next_history },
+                { '<C-f>', prompt_act.search_history },
                 { '<CR>', prompt_act.enter },
-                { '<C-d>', prompt_act.cancel },
                 { '<C-e>', prompt_act.accept_ghost },
                 { '<C-o>', prompt_act.toggle_cwd },
             },
-            n = { -- normal mode
-                { '<Esc>', prompt_act.cancel }
-            }
+            n = {
+                { '<Esc>', prompt_act.cancel },
+            },
         },
         terminal = {
-            -- WARNING: There is no `ni` in terminal mode
             n = {
                 { '<CR>', terminal_act.follow_error },
                 { '<C-q>', terminal_act.send_to_quickfix },
-                { 'q', terminal_act.close }
-            }
-        }
-    }
-}
+                { 'q', terminal_act.close },
+            },
+        },
+    },
+})
 ```
+
+## Internal Layout
+
+The codebase is split by responsibility:
+
+- `lua/command/api.lua`: public command entrypoints
+- `lua/command/session.lua`: runtime session state
+- `lua/command/actions/`: prompt and terminal actions
+- `lua/command/ui/`: prompt, terminal, and ghost text UI
+- `lua/command/execution/`: expansion, validation, and execution flow
+- `lua/command/history/`: history state, persistence, migration, and picker integration
+- `lua/command/quickfix/parser.lua`: error parsing and quickfix item building
+- `lua/command/util/`: small shared helpers
 
 # How to use
 
-The plugin provides you two commands:
+The plugin provides three commands:
 - `CommandExecute`: Opens a prompt and asks you for the command that you want to execute. Then, a terminal appears and runs the command.
 - `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
 - `CommandExecuteSelection`: Executes the current text selection as a shell command directly.
@@ -120,11 +130,11 @@ You can use the following variables in your commands to reference the current ed
 ### Raw vs Escaped Selection
 
 - **Use `${selection}` (Raw)** when the selection contains multiple arguments, flags, or shell operators that you want the shell to interpret.
-    - *Example:* `rm ${selection}` where selection is `file1.txt file2.txt`.
-    - *Example:* `grep ${selection}` where selection is `-r "search" .`
+  Example: `rm ${selection}` where selection is `file1.txt file2.txt`.
+  Example: `grep ${selection}` where selection is `-r "search" .`
 - **Use `${selection:sh}` (Escaped)** when the selection is a single string containing special characters (spaces, quotes, `&`, etc.) that should be treated as a single argument.
-    - *Example:* `git commit -m ${selection:sh}` where selection is `Fix: "broken" logic & typos`.
-    - *Example:* `curl ${selection:sh}` where selection is `https://example.com?query=1&param=2`.
+  Example: `git commit -m ${selection:sh}` where selection is `Fix: "broken" logic & typos`.
+  Example: `curl ${selection:sh}` where selection is `https://example.com?query=1&param=2`.
 
 **Examples:**
 
@@ -153,8 +163,8 @@ If you want to disable validation warnings, set `validation.warn = false`:
 ```lua
 require('command').setup({
     validation = {
-        warn = false
-    }
+        warn = false,
+    },
 })
 ```
 

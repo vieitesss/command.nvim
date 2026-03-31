@@ -130,6 +130,24 @@ M.error_table = {
     },
 }
 
+local ordered_patterns = {}
+
+for name, pattern in pairs(M.error_table) do
+    ordered_patterns[#ordered_patterns + 1] = {
+        name = name,
+        regex = pattern.regex,
+        priority = pattern.priority or 0,
+    }
+end
+
+table.sort(ordered_patterns, function(a, b)
+    if a.priority ~= b.priority then
+        return a.priority > b.priority
+    end
+
+    return a.name < b.name
+end)
+
 ---Parse a line of text and extract error information using regex patterns
 ---@param line string The line to parse
 ---@return table|nil Error information with file, line, and col fields, or nil if no match
@@ -138,8 +156,8 @@ function M.parse_line(line)
         return nil
     end
 
-    -- Try each error pattern in order
-    for pattern_name, pattern in pairs(M.error_table) do
+    -- Try each error pattern in a deterministic order.
+    for _, pattern in ipairs(ordered_patterns) do
         if pattern.regex then
             -- Use vim.fn.matchlist to get capture groups
             local match = vim.fn.matchlist(line, pattern.regex)
@@ -187,6 +205,42 @@ function M.parse_line(line)
     end
 
     return nil
+end
+
+---@param lines string[]
+---@return table[]
+function M.build_quickfix_items(lines)
+    local qf_list = {}
+
+    for _, line in ipairs(lines) do
+        local trimmed = line:gsub('^%s+', ''):gsub('%s+$', '')
+
+        if trimmed ~= '' then
+            local error_info = M.parse_line(line)
+
+            if error_info and error_info.file then
+                table.insert(qf_list, {
+                    filename = error_info.file,
+                    lnum = error_info.line or 1,
+                    col = error_info.col or 0,
+                    text = line,
+                })
+            elseif trimmed:match('^[%w%.%-%_/~]+') and vim.fn.filereadable(trimmed) == 1 then
+                table.insert(qf_list, {
+                    filename = trimmed,
+                    lnum = 1,
+                    col = 0,
+                    text = line,
+                })
+            else
+                table.insert(qf_list, {
+                    text = line,
+                })
+            end
+        end
+    end
+
+    return qf_list
 end
 
 return M

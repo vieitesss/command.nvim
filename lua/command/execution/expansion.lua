@@ -32,7 +32,7 @@ function M.expand(cmd, context)
             return tostring(context.cursor[2] + 1)
         end,
         cwd = function()
-            return session.get_resolved_cwd()
+            return session.get_resolved_cwd(context)
         end,
         selection = function()
             return selection.get_visual_selection(context.buf)

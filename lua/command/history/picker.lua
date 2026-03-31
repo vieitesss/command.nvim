@@ -28,6 +28,7 @@ function M.search(entries, callback)
         end)
     end
 
+    ---@type CommandPromptWindow|nil
     local prompt_window = session.get_window('prompt')
     local fzf_opts = {
         prompt = 'History> ',

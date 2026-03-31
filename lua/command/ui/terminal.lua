@@ -1,6 +1,28 @@
 local config = require('command.config')
 local session = require('command.session')
 
+---@class CommandTerminalCreateOpts: CommandConfigTerminalOpts
+---@field context ExecutionContext|nil Source context used for cwd resolution and terminal reuse
+
+---@class CommandTerminalWindowOpts: CommandWindowOpts
+---@field height number Terminal height used when opening the split
+---@field split string Terminal split direction
+---@field context ExecutionContext|nil Source context associated with the terminal
+
+---@class CommandTerminalWindow: Window
+---@field name 'terminal'
+---@field opts CommandTerminalWindowOpts
+
+---@class CommandTerminal
+---@field create fun(opts: CommandTerminalCreateOpts|nil, actions: table): CommandTerminalWindow|nil
+---@field get fun(): CommandTerminalWindow|nil
+---@field enter_normal_mode fun()
+---@field close fun()
+---@field send_command fun(cmd: string, context: ExecutionContext|nil): boolean
+---@field get_lines fun(): string[]
+---@field get_current_line fun(): string|nil
+
+---@type CommandTerminal
 local M = {}
 
 local WINDOW_NAME = 'terminal'
@@ -24,18 +46,19 @@ local function attach_default_keymaps(buf, actions)
     vim.keymap.set('t', '<C-q>', actions.send_to_quickfix, opts)
 end
 
----@param opts table|nil
+---@param opts CommandTerminalCreateOpts|nil
 ---@param actions table
----@return table|nil
+---@return CommandTerminalWindow|nil
 function M.create(opts, actions)
-    opts = opts or {}
+    ---@type CommandTerminalCreateOpts
+    local create_opts = opts or {}
 
     if M.get() then
         M.close()
     end
 
-    local height = opts.height or config.values.ui.terminal.height or 0.25
-    local split = opts.split or config.values.ui.terminal.split or 'below'
+    local height = create_opts.height or config.values.ui.terminal.height or 0.25
+    local split = create_opts.split or config.values.ui.terminal.split or 'below'
 
     if height < 1 then
         height = math.floor(vim.o.lines * height)
@@ -65,24 +88,30 @@ function M.create(opts, actions)
         return nil
     end
 
-    session.register_window({
+    ---@type CommandTerminalWindow
+    local window = {
         name = WINDOW_NAME,
         buf = buf,
         win = win,
         opts = {
             height = height,
             split = split,
+            context = create_opts.context,
         },
-    })
+    }
+
+    session.register_window(window)
 
     attach_default_keymaps(buf, actions)
 
-    return { buf = buf, win = win }
+    return window
 end
 
----@return table|nil
+---@return CommandTerminalWindow|nil
 function M.get()
-    return session.get_window(WINDOW_NAME)
+    ---@type CommandTerminalWindow|nil
+    local window = session.get_window(WINDOW_NAME)
+    return window
 end
 
 function M.enter_normal_mode()
@@ -109,15 +138,16 @@ function M.close()
 end
 
 ---@param cmd string
+---@param context ExecutionContext|nil
 ---@return boolean
-function M.send_command(cmd)
+function M.send_command(cmd, context)
     local window = M.get()
     if not window or not vim.api.nvim_buf_is_valid(window.buf) then
         return false
     end
 
     local shell = vim.env.SHELL or '/bin/sh'
-    local cwd = session.get_resolved_cwd()
+    local cwd = session.get_resolved_cwd(context or (window.opts and window.opts.context or nil))
 
     local job_id = vim.fn.termopen({ shell, '-ic', cmd }, {
         cwd = cwd,

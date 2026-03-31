@@ -1,7 +1,9 @@
 local config = require('command.config')
+---@type CommandExecutor
 local executor = require('command.execution.executor')
 local history = require('command.history')
 local notify = require('command.util.notify')
+---@type CommandPrompt
 local prompt = require('command.ui.prompt')
 local ghost_text = require('command.ui.ghost_text')
 local session = require('command.session')
@@ -19,6 +21,7 @@ function M.enter()
     ghost_text.clear(window.buf)
 
     local ran = executor.run(cmd, {
+        context = window.opts and window.opts.context or nil,
         before_execute = function()
             history.reset_index()
             prompt.close()

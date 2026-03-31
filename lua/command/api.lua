@@ -2,6 +2,7 @@ local config = require('command.config')
 local executor = require('command.execution.executor')
 local history = require('command.history')
 local notify = require('command.util.notify')
+---@type CommandPrompt
 local prompt = require('command.ui.prompt')
 local prompt_actions = require('command.actions.prompt')
 local selection = require('command.util.selection')
@@ -16,13 +17,18 @@ local function prepare_context()
 end
 
 function M.execute()
-    prepare_context()
+    local context = prepare_context()
 
-    if prompt.focus() then
+    if prompt.focus(context) then
         return
     end
 
-    local result = prompt.create(config.values.ui.prompt, prompt_actions)
+    ---@type CommandPromptCreateOpts
+    local prompt_opts = vim.tbl_extend('force', {}, config.values.ui.prompt or {}, {
+        context = context,
+    })
+
+    local result = prompt.create(prompt_opts, prompt_actions)
     if not result then
         notify.error('Could not create the prompt window')
         return
@@ -39,11 +45,11 @@ function M.execute_selection()
         return
     end
 
-    executor.run(selected)
+    executor.run(selected, { context = context })
 end
 
 function M.execute_last()
-    prepare_context()
+    local context = prepare_context()
 
     if not session.has_run() then
         notify.error('Use first `:CommandExecute`')
@@ -56,7 +62,10 @@ function M.execute_last()
         return
     end
 
-    executor.run(last, { record_history = false })
+    executor.run(last, {
+        context = context,
+        record_history = false,
+    })
 end
 
 return M

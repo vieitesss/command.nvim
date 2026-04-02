@@ -5,6 +5,7 @@ Neovim plugin that allows you to:
   You can use your shell configuration (e.g., aliases, functions).
 - Keep a history of executed commands and easily access them.
 - Re-execute the last executed command with a single command.
+- Reopen the most recent terminal window if it was closed accidentally and recover its output.
 - Search through the history of executed commands using:
   fzf-lua
 - Use context variables in your commands (e.g., `${file}`, `${line}`, `${selection}`) to reference the current editor state.
@@ -80,7 +81,7 @@ require('command').setup({
             n = {
                 { '<CR>', terminal_act.follow_error },
                 { '<C-q>', terminal_act.send_to_quickfix },
-                { 'q', terminal_act.close },
+                { 'q', terminal_act.hide },
             },
         },
     },
@@ -102,10 +103,17 @@ The codebase is split by responsibility:
 
 # How to use
 
-The plugin provides three commands:
+The plugin provides four commands:
 - `CommandExecute`: Opens a prompt and asks you for the command that you want to execute. Then, a terminal appears and runs the command.
 - `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
 - `CommandExecuteSelection`: Executes the current text selection as a shell command directly.
+- `CommandReopenTerminal`: Reopens the most recent terminal buffer if it is still available.
+
+### Terminal Recovery
+
+If you close the terminal window accidentally, use `:CommandReopenTerminal` to restore the same terminal buffer with its existing output.
+
+The default `q` mapping hides the terminal window so it can be reopened later. The saved terminal is replaced the next time you run a new command.
 
 ### Working Directory
 

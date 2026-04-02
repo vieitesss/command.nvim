@@ -4,6 +4,24 @@ local terminal = require('command.ui.terminal')
 
 local M = {}
 
+---@param info { id: integer, start_idx: integer, end_idx: integer }
+---@return string[]
+local function format_quickfix_output(info)
+    local qf_info = vim.fn.getqflist({
+        id = info.id,
+        items = 0,
+    })
+    local items = qf_info.items or {}
+    local lines = {}
+
+    for i = info.start_idx, info.end_idx do
+        local item = items[i]
+        lines[#lines + 1] = (item and item.text) or ''
+    end
+
+    return lines
+end
+
 function M.close()
     terminal.close()
 end
@@ -43,7 +61,15 @@ function M.send_to_quickfix()
         return
     end
 
-    vim.fn.setqflist(qf_list, 'r')
+    local ok = pcall(vim.fn.setqflist, {}, 'r', {
+        items = qf_list,
+        quickfixtextfunc = format_quickfix_output,
+    })
+
+    if not ok then
+        vim.fn.setqflist(qf_list, 'r')
+    end
+
     terminal.close()
     vim.cmd('copen')
     notify.info(string.format('Added %d items to quickfix list', #qf_list))

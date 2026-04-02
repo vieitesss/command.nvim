@@ -90,7 +90,7 @@ Default terminal keys:
 
 `q` hides the window instead of deleting it, so `:CommandReopenTerminal` can bring it back. The saved terminal is replaced the next time you run a new command.
 
-When you send output to quickfix, file paths and error lines become jumpable entries and the rest of the output is preserved as text entries.
+When you send output to quickfix, the window keeps the original command output text. File paths and error lines are still parsed into jumpable quickfix entries, while non-matching lines stay as plain text rows.
 
 ## Context Variables
 

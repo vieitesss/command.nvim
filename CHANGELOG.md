@@ -7,6 +7,11 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-04-02
+
+### Fixed
+- Quickfix window no longer prefixes plain output lines with `||`; output text is rendered as-is using a list-local `quickfixtextfunc`, while parsed file/error entries remain jumpable.
+
 ## [0.1.0] - 2026-04-02
 
 ### Added

@@ -36,6 +36,13 @@ vim.keymap.set({'n', 'x', 'v'}, '<Plug>(CommandExecuteSelection)', function()
     end
 end, { desc = 'Execute selected text as command' })
 
+vim.keymap.set({ 'n', 'i' }, '<Plug>(CommandReopenTerminal)', function()
+    local command = load_command()
+    if command then
+        command.reopen_terminal()
+    end
+end, { desc = 'Reopen last terminal' })
+
 -- Create user commands (lazy-loaded)
 vim.api.nvim_create_user_command("CommandExecute", function()
     local command = load_command()
@@ -57,3 +64,10 @@ vim.api.nvim_create_user_command("CommandExecuteSelection", function()
         command.execute_selection()
     end
 end, { range = true })
+
+vim.api.nvim_create_user_command("CommandReopenTerminal", function()
+    local command = load_command()
+    if command then
+        command.reopen_terminal()
+    end
+end, {})

@@ -7,6 +7,8 @@ local prompt = require('command.ui.prompt')
 local prompt_actions = require('command.actions.prompt')
 local selection = require('command.util.selection')
 local session = require('command.session')
+local terminal = require('command.ui.terminal')
+local terminal_actions = require('command.actions.terminal')
 
 local M = {}
 
@@ -66,6 +68,14 @@ function M.execute_last()
         context = context,
         record_history = false,
     })
+end
+
+function M.reopen_terminal()
+    local terminal_window = terminal.reopen(terminal_actions)
+    if not terminal_window then
+        notify.error('No terminal output available to reopen')
+        return
+    end
 end
 
 return M

@@ -48,6 +48,12 @@ function M.execute_selection()
     return api.execute_selection()
 end
 
+---Reopen the last hidden terminal window
+function M.reopen_terminal()
+    ensure_init()
+    return api.reopen_terminal()
+end
+
 ---Teardown and reset the plugin state
 function M.teardown()
     if not M._initialized then

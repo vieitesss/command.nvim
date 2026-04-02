@@ -159,6 +159,11 @@ end
 function M.cleanup_window(win_id)
     for idx, window in ipairs(M._windows) do
         if window.win == win_id then
+            if window.name == 'terminal' and window.buf and vim.api.nvim_buf_is_valid(window.buf) then
+                window.win = nil
+                return
+            end
+
             table.remove(M._windows, idx)
             return
         end

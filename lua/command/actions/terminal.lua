@@ -8,6 +8,10 @@ function M.close()
     terminal.close()
 end
 
+function M.hide()
+    terminal.hide()
+end
+
 function M.follow_error()
     local line = terminal.get_current_line()
     if not line then

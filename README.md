@@ -1,221 +1,215 @@
 # command.nvim
 
-Neovim plugin that allows you to:
-- Type a command you want to run and execute it directly in a terminal inside Neovim.
-  You can use your shell configuration (e.g., aliases, functions).
-- Keep a history of executed commands and easily access them.
-- Re-execute the last executed command with a single command.
-- Reopen the most recent terminal window if it was closed accidentally and recover its output.
-- Search through the history of executed commands using:
-  fzf-lua
-- Use context variables in your commands (e.g., `${file}`, `${line}`, `${selection}`) to reference the current editor state.
-- Get completion suggestions as virtual text while typing.
-- Validate commands for potentially dangerous patterns (command substitution, piping to `rm`/`dd`, redirects to system files, etc.) with optional warnings and confirmation prompts.
-- Follow compilation errors for some languages (credits to [compile-mode.nvim](https://github.com/ej-shafran/compile-mode.nvim/tree/main)).
-- Send terminal output to the quickfix list for easy navigation and file jumping.
+Run shell commands inside Neovim, keep a searchable history, and navigate terminal output without leaving the editor.
 
-# Installation
+`command.nvim` runs commands through `$SHELL -ic` and falls back to `/bin/sh`, so your aliases, functions, and shell startup config are available.
 
-## vim.pack
+## What It Does
+
+- Open a centered prompt and run any shell command in a Neovim terminal split
+- Re-run the last command in the current Neovim session
+- Execute the current visual selection as a shell command
+- Persist command history across sessions
+- Search command history with `fzf-lua`
+- Show ghost text suggestions from previous commands while typing
+- Expand editor-aware variables like `${filePath}`, `${line}`, `${cwd}`, and `${selection}`
+- Choose whether commands run from the current file directory or Neovim's current working directory
+- Ask for confirmation before risky commands
+- Hide and reopen the last terminal without losing its output
+- Jump from terminal output to files and errors
+- Send terminal output to quickfix
+
+## Installation
+
+### vim.pack
 
 ```lua
 vim.pack.add({
-    { src = "https://github.com/vieitesss/command.nvim" },
+  { src = 'https://github.com/vieitesss/command.nvim' },
 })
 
 require('command').setup()
 ```
 
-## lazy.nvim
+### lazy.nvim
 
 ```lua
 return {
-    "vieitesss/command.nvim",
-    lazy = false,
-    opts = true,
-    version = "*",
+  'vieitesss/command.nvim',
+  lazy = false,
+  version = '*',
+  opts = {},
 }
 ```
 
-# Versioning
+Install `ibhagwan/fzf-lua` if you want history search from the prompt with `<C-f>`.
 
-`command.nvim` uses Semantic Versioning and annotated git tags in the form `vX.Y.Z`.
+Use `:checkhealth command.nvim` if you want to verify your shell, history storage, and `fzf-lua` setup.
 
-- Patch releases are for bug fixes, docs, tests, and internal refactors that do not break the public API.
-- Minor releases are for backwards-compatible features, new commands, new config, or new integration points.
-- Until `1.0.0`, breaking changes increment the minor version.
-- After `1.0.0`, breaking changes increment the major version.
+## Commands
 
-The public API for versioning includes:
+`command.nvim` does not define global keymaps by default. You can use the commands directly:
 
-- `require('command').setup()`, `execute()`, `execute_last()`, `execute_selection()`, `reopen_terminal()`, and `teardown()`
-- `:CommandExecute`, `:CommandExecuteLast`, `:CommandExecuteSelection`, and `:CommandReopenTerminal`
-- `<Plug>(CommandExecute)`, `<Plug>(CommandExecuteLast)`, `<Plug>(CommandExecuteSelection)`, and `<Plug>(CommandReopenTerminal)`
-- Documented configuration keys
-- Documented `command.actions.prompt` and `command.actions.terminal` modules
-- History persistence compatibility when users already have saved command data
+- `:CommandExecute` opens the prompt and runs a new command
+- `:CommandExecuteLast` re-runs the last command after one has already been executed in the current Neovim session
+- `:CommandExecuteSelection` runs the current visual selection as a shell command
+- `:CommandReopenTerminal` reopens the last hidden terminal window if its buffer is still available
 
-All release notes live in `CHANGELOG.md`.
-
-The first stable tag for this repository is `v0.1.0`.
-
-# Configuration
+It also exposes `<Plug>` mappings if you want your own keys:
 
 ```lua
-local prompt_act = require 'command.actions.prompt'
-local terminal_act = require 'command.actions.terminal'
-
-require('command').setup({
-    history = {
-        max = 200,
-        picker = 'fzf-lua',
-    },
-    ui = {
-        prompt = {
-            max_width = 40,
-            ghost_text = true,
-        },
-        terminal = {
-            height = 0.25,
-            split = 'below',
-        },
-    },
-    execution = {
-        cwd = 'buffer', -- 'buffer' | 'root'
-    },
-    validation = {
-        warn = true,
-    },
-    keymaps = {
-        prompt = {
-            ni = {
-                { '<Up>', prompt_act.prev_history },
-                { '<Down>', prompt_act.next_history },
-                { '<C-f>', prompt_act.search_history },
-                { '<CR>', prompt_act.enter },
-                { '<C-e>', prompt_act.accept_ghost },
-                { '<C-o>', prompt_act.toggle_cwd },
-            },
-            n = {
-                { '<Esc>', prompt_act.cancel },
-            },
-        },
-        terminal = {
-            n = {
-                { '<CR>', terminal_act.follow_error },
-                { '<C-q>', terminal_act.send_to_quickfix },
-                { 'q', terminal_act.hide },
-            },
-        },
-    },
-})
+vim.keymap.set({ 'n', 'i' }, '<M-;>', '<Plug>(CommandExecute)')
+vim.keymap.set({ 'n', 'i' }, '<M-l>', '<Plug>(CommandExecuteLast)')
+vim.keymap.set('x', '<M-;>', '<Plug>(CommandExecuteSelection)')
+vim.keymap.set('n', '<M-r>', '<Plug>(CommandReopenTerminal)')
 ```
 
-## Internal Layout
+## Prompt
 
-The codebase is split by responsibility:
+Default prompt keys:
 
-- `lua/command/api.lua`: public command entrypoints
-- `lua/command/session.lua`: runtime session state
-- `lua/command/actions/`: prompt and terminal actions
-- `lua/command/ui/`: prompt, terminal, and ghost text UI
-- `lua/command/execution/`: expansion, validation, and execution flow
-- `lua/command/history/`: history state, persistence, migration, and picker integration
-- `lua/command/quickfix/parser.lua`: error parsing and quickfix item building
-- `lua/command/util/`: small shared helpers
+- `<CR>` runs the command
+- `<Up>` and `<Down>` browse history
+- `<C-f>` searches history with `fzf-lua`
+- `<C-e>` accepts the ghost text suggestion
+- `<C-o>` toggles the execution directory
+- `<Esc>` cancels in normal mode
 
-# How to use
+The prompt title shows the directory that will be used for execution. `<C-o>` switches between:
 
-The plugin provides four commands:
-- `CommandExecute`: Opens a prompt and asks you for the command that you want to execute. Then, a terminal appears and runs the command.
-- `CommandExecuteLast`: Runs the last executed command. `CommandExecute` must have been called previously during the session.
-- `CommandExecuteSelection`: Executes the current text selection as a shell command directly.
-- `CommandReopenTerminal`: Reopens the most recent terminal buffer if it is still available.
+- `buffer`: the current file's directory
+- `root`: Neovim's current working directory from `:pwd` / `getcwd()`
 
-### Terminal Recovery
+## Terminal
 
-If you close the terminal window accidentally, use `:CommandReopenTerminal` to restore the same terminal buffer with its existing output.
+Default terminal keys:
 
-The default `q` mapping hides the terminal window so it can be reopened later. The saved terminal is replaced the next time you run a new command.
+- `q` hides the terminal
+- `<CR>` opens the file or error under the cursor
+- `<C-q>` sends the full output to quickfix
 
-### Working Directory
+`q` hides the window instead of deleting it, so `:CommandReopenTerminal` can bring it back. The saved terminal is replaced the next time you run a new command.
 
-The prompt window title displays the **Current Working Directory (CWD)** where the command will be executed.
-- By default, it uses the directory of the current buffer (`buffer` mode).
-- You can toggle between the **buffer directory** and the **project root** (from `getcwd()`) by pressing `<C-o>` while in the prompt.
+When you send output to quickfix, file paths and error lines become jumpable entries and the rest of the output is preserved as text entries.
 
-### Context Variables
+## Context Variables
 
-You can use the following variables in your commands to reference the current editor context. They will be automatically expanded before execution.
+You can use these variables in commands typed into the prompt. They are expanded before execution.
 
-- `${file}`: Full file name (`file.txt`).
-- `${filePath}`: Absolute path of the current buffer.
-- `${fileDir}`: Directory of the current buffer.
-- `${fileName}`: Filename without extension (`file`).
-- `${line}`: Current cursor line number.
-- `${col}`: Current cursor column number.
-- `${cwd}`: Current working directory.
-- `${selection}`: The text from the last visual selection.
-- `${selection:sh}`: The text from the last visual selection, shell-escaped for safe use in commands.
+| Variable | Expands to |
+| --- | --- |
+| `${file}` | Current filename with extension |
+| `${filePath}` | Absolute path of the current buffer |
+| `${fileDir}` | Directory of the current buffer |
+| `${fileName}` | Current filename without extension |
+| `${line}` | Current cursor line |
+| `${col}` | Current cursor column |
+| `${cwd}` | Resolved execution directory |
+| `${selection}` | Raw visual selection |
+| `${selection:sh}` | Shell-escaped visual selection |
 
-### Raw vs Escaped Selection
+Use `${selection}` when you want the shell to interpret the selected text as-is. Use `${selection:sh}` when the selection should be treated as one safe shell argument.
 
-- **Use `${selection}` (Raw)** when the selection contains multiple arguments, flags, or shell operators that you want the shell to interpret.
-  Example: `rm ${selection}` where selection is `file1.txt file2.txt`.
-  Example: `grep ${selection}` where selection is `-r "search" .`
-- **Use `${selection:sh}` (Escaped)** when the selection is a single string containing special characters (spaces, quotes, `&`, etc.) that should be treated as a single argument.
-  Example: `git commit -m ${selection:sh}` where selection is `Fix: "broken" logic & typos`.
-  Example: `curl ${selection:sh}` where selection is `https://example.com?query=1&param=2`.
+Examples:
 
-**Examples:**
+- `python ${filePath}`
+- `git blame -L ${line},+1 ${filePath}`
+- `rm ${selection}`
+- `git commit -m ${selection:sh}`
 
-- Run the current file: `python ${filePath}`
-- Git blame current line: `git blame -L ${line},+1 ${filePath}`
-- Echo selected text: `echo '${selection}'`
-- Search selected text (even with special characters) with `grep`: `grep ${selection:sh} ${filePath}`
+## Safety
 
-## Validation Warnings
+By default, `command.nvim` asks for confirmation when a command contains risky patterns such as:
 
-The plugin validates commands for potentially dangerous patterns and shows a warning before execution. This helps prevent accidental execution of destructive commands.
+- command substitution: `$(...)` or `` `...` ``
+- pipes to `rm`, `dd`, `mkfs`, or `shred`
+- redirects to `/etc`, `/sys`, or `/dev`
+- background execution with trailing `&`
+- command chains with `&&` or `||`
 
-### Detected Patterns
-
-The plugin warns about:
-- Command substitution: `$(...)` or `` `...` ``
-- Piping to dangerous commands: `| rm`, `| dd`, `| mkfs`, `| shred`
-- Redirects to system files: `> /etc/`, `> /sys/`, `> /dev/`
-- Background execution: `&` at the end
-- Command chains: `||`, `&&`
-
-### Disabling Warnings
-
-If you want to disable validation warnings, set `validation.warn = false`:
+Turn the warning off with:
 
 ```lua
 require('command').setup({
-    validation = {
-        warn = false,
-    },
+  validation = {
+    warn = false,
+  },
 })
 ```
 
-When warnings are enabled (default), the plugin will display the dangerous pattern(s) detected and the full command, then prompt you to confirm execution with `(y/n):`.
+## Configuration
 
-## Quickfix Integration
+Full setup example:
 
-Press `<C-q>` in the terminal window (normal or terminal mode) to send all terminal output to the quickfix list. This is useful for:
+```lua
+local prompt = require('command.actions.prompt')
+local terminal = require('command.actions.terminal')
 
-- Navigating file listings from commands like `fd`, `find`, or `ls`
-- Jumping to compilation errors and warnings
-- Browsing git log output
-- Working with grep results
+require('command').setup({
+  history = {
+    max = 200,
+    picker = 'fzf-lua',
+    -- file_path = vim.fn.stdpath('data') .. '/command_history.json',
+  },
+  ui = {
+    prompt = {
+      max_width = 40,
+      ghost_text = true,
+    },
+    terminal = {
+      height = 0.25,
+      split = 'below',
+    },
+  },
+  execution = {
+    cwd = 'buffer',
+  },
+  validation = {
+    warn = true,
+  },
+  keymaps = {
+    prompt = {
+      ni = {
+        { '<Up>', prompt.prev_history },
+        { '<Down>', prompt.next_history },
+        { '<C-f>', prompt.search_history },
+        { '<CR>', prompt.enter },
+        { '<C-e>', prompt.accept_ghost },
+        { '<C-o>', prompt.toggle_cwd },
+      },
+      n = {
+        { '<Esc>', prompt.cancel },
+      },
+    },
+    terminal = {
+      n = {
+        { '<CR>', terminal.follow_error },
+        { '<C-q>', terminal.send_to_quickfix },
+        { 'q', terminal.hide },
+      },
+    },
+  },
+})
+```
 
-The plugin intelligently detects:
-- **Error messages** with file paths and line numbers (e.g., `file.lua:42:10: error`) - opens at the specific location
-- **Plain file paths** (e.g., `lua/command/terminal.lua`) - opens at line 1
-- **Any other output** - added as text-only entries for reference
+Option reference:
 
-After pressing `<C-q>`, the terminal closes and the quickfix window opens. Use:
-- `<CR>` to open files at the detected location
-- `:cnext` / `:cprev` (or `:cn` / `:cp`) to navigate between entries
-- `:copen` / `:cclose` to toggle the quickfix window
+| Key | Default | Description |
+| --- | --- | --- |
+| `history.max` | `200` | Maximum number of commands stored in history |
+| `history.picker` | `'fzf-lua'` | History picker used by `<C-f>`. Only `fzf-lua` is supported |
+| `history.file_path` | `stdpath('data') .. '/command_history.json'` | Optional custom path for persisted history |
+| `ui.prompt.max_width` | `40` | Base width used for the centered prompt window |
+| `ui.prompt.ghost_text` | `true` | Show inline history suggestions while typing |
+| `ui.terminal.height` | `0.25` | Size of the terminal split |
+| `ui.terminal.split` | `'below'` | Where the terminal opens: `below`, `above`, `left`, or `right` |
+| `execution.cwd` | `'buffer'` | `buffer` uses the current file directory, `root` uses Neovim's current working directory |
+| `validation.warn` | `true` | Ask for confirmation before executing risky commands |
+
+Keymap notes:
+
+- `keymaps.prompt.ni` defines prompt mappings for both insert and normal mode
+- `keymaps.prompt.n` defines prompt mappings for normal mode
+- `keymaps.terminal.n` defines terminal mappings for normal mode
+- If you want to fully replace the prompt defaults in normal mode, set both `keymaps.prompt.ni` and `keymaps.prompt.n`
+- `<C-q>` in terminal mode always sends the output to quickfix

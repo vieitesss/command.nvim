@@ -33,8 +33,31 @@ return {
     "vieitesss/command.nvim",
     lazy = false,
     opts = true,
+    version = "*",
 }
 ```
+
+# Versioning
+
+`command.nvim` uses Semantic Versioning and annotated git tags in the form `vX.Y.Z`.
+
+- Patch releases are for bug fixes, docs, tests, and internal refactors that do not break the public API.
+- Minor releases are for backwards-compatible features, new commands, new config, or new integration points.
+- Until `1.0.0`, breaking changes increment the minor version.
+- After `1.0.0`, breaking changes increment the major version.
+
+The public API for versioning includes:
+
+- `require('command').setup()`, `execute()`, `execute_last()`, `execute_selection()`, `reopen_terminal()`, and `teardown()`
+- `:CommandExecute`, `:CommandExecuteLast`, `:CommandExecuteSelection`, and `:CommandReopenTerminal`
+- `<Plug>(CommandExecute)`, `<Plug>(CommandExecuteLast)`, `<Plug>(CommandExecuteSelection)`, and `<Plug>(CommandReopenTerminal)`
+- Documented configuration keys
+- Documented `command.actions.prompt` and `command.actions.terminal` modules
+- History persistence compatibility when users already have saved command data
+
+All release notes live in `CHANGELOG.md`.
+
+The first stable tag for this repository is `v0.1.0`.
 
 # Configuration
 

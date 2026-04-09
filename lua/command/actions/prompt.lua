@@ -10,6 +10,20 @@ local session = require('command.session')
 
 local M = {}
 
+---@param window CommandPromptWindow
+---@return string
+local function get_current_line(window)
+    local cursor = vim.api.nvim_win_get_cursor(window.win)
+    local line = vim.api.nvim_buf_get_lines(window.buf, cursor[1] - 1, cursor[1], false)[1]
+    return line or ''
+end
+
+---@param window CommandPromptWindow
+---@return boolean
+local function line_ends_with_continuation(window)
+    return get_current_line(window):match('\\%s*$') ~= nil
+end
+
 function M.enter()
     local window = prompt.get()
     if not window then
@@ -29,6 +43,48 @@ function M.enter()
     })
 
     if not ran then
+        ghost_text.update(window.buf)
+    end
+end
+
+function M.enter_insert()
+    local window = prompt.get()
+    if not window then
+        notify.error('Prompt window not found')
+        return
+    end
+
+    if line_ends_with_continuation(window) then
+        M.newline()
+        return
+    end
+
+    M.enter()
+end
+
+function M.newline()
+    local window = prompt.get()
+    if not window or not vim.api.nvim_buf_is_valid(window.buf) or not vim.api.nvim_win_is_valid(window.win) then
+        return
+    end
+
+    ghost_text.clear(window.buf)
+
+    local cursor = vim.api.nvim_win_get_cursor(window.win)
+    local row = cursor[1] - 1
+    local line = get_current_line(window)
+    local col = cursor[2]
+
+    if col >= math.max(#line - 1, 0) then
+        col = #line
+    end
+
+    vim.api.nvim_buf_set_text(window.buf, row, col, row, col, { '', '' })
+    vim.api.nvim_win_set_cursor(window.win, { cursor[1] + 1, 0 })
+
+    prompt.refresh_layout()
+
+    if config.values.ui.prompt.ghost_text then
         ghost_text.update(window.buf)
     end
 end

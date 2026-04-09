@@ -2,6 +2,48 @@ local notify = require('command.util.notify')
 local session = require('command.session')
 
 local M = {}
+local ENTRY_DELIMITER = '\t'
+
+---@param cmd string
+---@return string
+local function format_history_entry(cmd)
+    return (cmd:gsub('\t', '  '):gsub('\n', ' \\n '))
+end
+
+---@param entries string[]
+---@return string[], table<string, string>
+local function build_picker_entries(entries)
+    local picker_entries = {}
+    local commands_by_id = {}
+    local picker_index = 0
+
+    for idx = #entries, 1, -1 do
+        picker_index = picker_index + 1
+
+        local id = tostring(picker_index)
+        local cmd = entries[idx]
+        picker_entries[picker_index] = id .. ENTRY_DELIMITER .. format_history_entry(cmd)
+        commands_by_id[id] = cmd
+    end
+
+    return picker_entries, commands_by_id
+end
+
+---@param selected_entry string|nil
+---@param commands_by_id table<string, string>
+---@return string|nil
+local function resolve_selected_command(selected_entry, commands_by_id)
+    if not selected_entry then
+        return nil
+    end
+
+    local id = selected_entry:match('^(%d+)\t')
+    if id and commands_by_id[id] then
+        return commands_by_id[id]
+    end
+
+    return selected_entry
+end
 
 ---@param entries string[]
 ---@param callback function
@@ -12,7 +54,7 @@ function M.search(entries, callback)
         return
     end
 
-    local history_list = vim.fn.reverse(vim.deepcopy(entries))
+    local history_list, commands_by_id = build_picker_entries(entries)
     if #history_list == 0 then
         notify.info('No history available')
         return
@@ -37,10 +79,14 @@ function M.search(entries, callback)
             width = 0.5,
             on_close = restore_mode,
         },
+        fzf_opts = {
+            ['--delimiter'] = ENTRY_DELIMITER,
+            ['--with-nth'] = '2..',
+        },
         actions = {
             default = function(selected)
                 if selected and selected[1] then
-                    callback(selected[1])
+                    callback(resolve_selected_command(selected[1], commands_by_id))
                 end
             end,
         },
@@ -57,5 +103,8 @@ function M.search(entries, callback)
 
     fzf.fzf_exec(history_list, fzf_opts)
 end
+
+M._build_entries = build_picker_entries
+M._resolve_selected_command = resolve_selected_command
 
 return M

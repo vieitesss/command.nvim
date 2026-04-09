@@ -4,6 +4,7 @@
 
 ---@class CommandConfigPromptOpts
 ---@field max_width integer Maximum width of prompt window (default: 40)
+---@field max_height integer Maximum height of prompt window (default: 10)
 ---@field ghost_text boolean Enable ghost text suggestions (default: true)
 
 ---@class CommandConfigTerminalOpts
@@ -44,6 +45,7 @@ local defaults = {
     ui = {
         prompt = {
             max_width = 40,
+            max_height = 10,
             ghost_text = true,
         },
         terminal = {
@@ -80,6 +82,18 @@ function M.setup(opts)
             vim.log.levels.WARN
         )
         M.values.history.picker = 'fzf-lua'
+    end
+
+    if type(M.values.ui.prompt.max_height) ~= 'number' or M.values.ui.prompt.max_height < 5 then
+        vim.notify(
+            "command.nvim: Invalid ui.prompt.max_height '"
+                .. tostring(M.values.ui.prompt.max_height)
+                .. "'. Defaulting to 10.",
+            vim.log.levels.WARN
+        )
+        M.values.ui.prompt.max_height = defaults.ui.prompt.max_height
+    else
+        M.values.ui.prompt.max_height = math.floor(M.values.ui.prompt.max_height)
     end
 end
 

@@ -48,17 +48,21 @@ function M.update(buf)
         return
     end
 
-    local lines = vim.api.nvim_buf_get_lines(buf, 0, 1, false)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     if #lines == 0 then
+        return
+    end
+
+    vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+
+    if #lines ~= 1 then
         return
     end
 
     local prefix = lines[1]
     local suggestion = history.get_suggestions(prefix)
 
-    vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
-
-    if suggestion and suggestion ~= prefix and prefix ~= '' then
+    if suggestion and suggestion ~= prefix and prefix ~= '' and not suggestion:find('\n', 1, true) then
         local completion = suggestion:sub(#prefix + 1)
 
         vim.api.nvim_buf_set_extmark(buf, ns_id, 0, #prefix, {
@@ -75,15 +79,15 @@ function M.accept(buf)
         return
     end
 
-    local lines = vim.api.nvim_buf_get_lines(buf, 0, 1, false)
-    if #lines == 0 then
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    if #lines ~= 1 then
         return
     end
 
     local prefix = lines[1]
     local suggestion = history.get_suggestions(prefix)
 
-    if suggestion and suggestion ~= prefix then
+    if suggestion and suggestion ~= prefix and not suggestion:find('\n', 1, true) then
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, { suggestion })
 
         local current_win = vim.api.nvim_get_current_win()

@@ -7,6 +7,12 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+### Added
+- Multiline prompt editing with automatic prompt resizing, including a minimum 5-line prompt for multiline commands when space allows.
+
+### Changed
+- Prompt history search now keeps multiline entries selectable by flattening them only for picker display.
+
 ## [0.1.1] - 2026-04-02
 
 ### Fixed

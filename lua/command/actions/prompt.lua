@@ -121,7 +121,10 @@ local function line_has_trailing_operator(line)
     return line:match('\\$') ~= nil
         or line:match('[|&][|&]$') ~= nil
         or line:match('%|$') ~= nil
-        or line:match('%f[%w](do|then|else|elif)$') ~= nil
+        or line:match('%f[%w]do$') ~= nil
+        or line:match('%f[%w]then$') ~= nil
+        or line:match('%f[%w]else$') ~= nil
+        or line:match('%f[%w]elif$') ~= nil
         or line:match('^%s*[%(%{]%s*$') ~= nil
         or line:match('<<[%-%w_]*$') ~= nil
 end

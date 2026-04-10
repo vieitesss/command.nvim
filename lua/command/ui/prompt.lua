@@ -298,12 +298,14 @@ function M.set_cursor(position)
 
     vim.api.nvim_win_set_cursor(window.win, position)
 
-    local view = vim.fn.winsaveview()
-    local max_topline = math.max(position[1] - (window.opts.height or PROMPT_HEIGHT) + 1, 1)
-    if view.topline > max_topline then
-        view.topline = max_topline
-        pcall(vim.fn.winrestview, view)
-    end
+    vim.api.nvim_win_call(window.win, function()
+        local view = vim.fn.winsaveview()
+        local max_topline = math.max(position[1] - (window.opts.height or PROMPT_HEIGHT) + 1, 1)
+        if view.topline > max_topline then
+            view.topline = max_topline
+            pcall(vim.fn.winrestview, view)
+        end
+    end)
 end
 
 function M.close()

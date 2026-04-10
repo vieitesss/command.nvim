@@ -37,7 +37,7 @@ local function resolve_selected_command(selected_entry, commands_by_id)
         return nil
     end
 
-    local id = selected_entry:match('^(%d+)\t')
+    local id = selected_entry:match('^(%d+)' .. vim.pesc(ENTRY_DELIMITER))
     if id and commands_by_id[id] then
         return commands_by_id[id]
     end

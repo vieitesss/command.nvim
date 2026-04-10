@@ -41,6 +41,22 @@ prompt.set_text('echo \\')
 prompt_actions.enter_insert()
 assert(prompt.get_text() == table.concat({ 'echo \\', '' }, '\n'), 'insert enter should continue lines ending in backslash')
 assert(prompt.get().opts.height == 5, 'continuation newline should keep multiline height rules')
+assert(vim.fn.winsaveview().topline == 1, 'continuation newline should keep the first line visible')
+
+prompt.set_text('echo hi &&')
+prompt_actions.enter_insert()
+assert(prompt.get_text() == table.concat({ 'echo hi &&', '' }, '\n'), 'insert enter should continue after trailing and operator')
+
+prompt.set_text(table.concat({ 'echo hola &&', 'echo adios' }, '\n'))
+assert(prompt_actions._command_needs_continuation(prompt.get_text()) == false, 'continuation detector should allow complete multiline and commands to execute')
+
+prompt.set_text('echo "unterminated')
+prompt_actions.enter_insert()
+assert(prompt.get_text() == table.concat({ 'echo "unterminated', '' }, '\n'), 'insert enter should continue open quotes')
+
+assert(prompt_actions._command_needs_continuation('echo hi &&') == true, 'continuation detector should match trailing and operator')
+assert(prompt_actions._command_needs_continuation('echo "unterminated') == true, 'continuation detector should match open quotes')
+assert(prompt_actions._command_needs_continuation('echo hi') == false, 'continuation detector should reject complete commands')
 
 local tall_command = table.concat({ '1', '2', '3', '4', '5', '6', '7', '8', '9' }, '\n')
 prompt.set_text(tall_command)

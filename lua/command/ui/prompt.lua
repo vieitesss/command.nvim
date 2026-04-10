@@ -22,6 +22,7 @@ local session = require('command.session')
 ---@field focus fun(context: ExecutionContext|nil): boolean
 ---@field update_title fun()
 ---@field refresh_layout fun()
+---@field set_cursor fun(position: integer[])
 ---@field close fun()
 ---@field set_text fun(command: string)
 ---@field get_text fun(): string
@@ -288,6 +289,23 @@ function M.refresh_layout()
     apply_layout(M.get())
 end
 
+---@param position integer[]
+function M.set_cursor(position)
+    local window = M.get()
+    if not window or not window.win or not vim.api.nvim_win_is_valid(window.win) then
+        return
+    end
+
+    vim.api.nvim_win_set_cursor(window.win, position)
+
+    local view = vim.fn.winsaveview()
+    local max_topline = math.max(position[1] - (window.opts.height or PROMPT_HEIGHT) + 1, 1)
+    if view.topline > max_topline then
+        view.topline = max_topline
+        pcall(vim.fn.winrestview, view)
+    end
+end
+
 function M.close()
     local window = M.get()
     if not window then
@@ -311,7 +329,7 @@ function M.set_text(command)
 
     if window.win and vim.api.nvim_win_is_valid(window.win) then
         local last_line = lines[#lines] or ''
-        vim.api.nvim_win_set_cursor(window.win, { #lines, #last_line })
+        M.set_cursor({ #lines, #last_line })
     end
 end
 

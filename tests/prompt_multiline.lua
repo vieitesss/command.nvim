@@ -1,6 +1,7 @@
 vim.opt.runtimepath:prepend('.')
 
 local config = require('command.config')
+local executor = require('command.execution.executor')
 local session = require('command.session')
 local picker = require('command.history.picker')
 local prompt = require('command.ui.prompt')
@@ -46,6 +47,31 @@ assert(vim.fn.winsaveview().topline == 1, 'continuation newline should keep the 
 prompt.set_text('echo hi &&')
 prompt_actions.enter_insert()
 assert(prompt.get_text() == table.concat({ 'echo hi &&', '' }, '\n'), 'insert enter should continue after trailing and operator')
+
+local original_notify = vim.notify
+local original_run = executor.run
+local notifications = {}
+local run_calls = 0
+
+vim.notify = function(msg, level)
+    table.insert(notifications, { msg = msg, level = level })
+end
+
+executor.run = function()
+    run_calls = run_calls + 1
+    return false
+end
+
+prompt.set_text('echo hi &&')
+prompt_actions.enter()
+assert(prompt.get_text() == 'echo hi &&', 'normal enter should keep incomplete command unchanged')
+assert(run_calls == 0, 'normal enter should not execute incomplete commands')
+assert(#notifications > 0, 'normal enter should warn for incomplete commands')
+assert(notifications[#notifications].msg:find('Command is incomplete and cannot be executed in normal mode', 1, true) ~= nil,
+    'normal enter should explain why the command was not executed')
+
+vim.notify = original_notify
+executor.run = original_run
 
 prompt.set_text(table.concat({ 'echo hola &&', 'echo adios' }, '\n'))
 assert(prompt_actions._command_needs_continuation(prompt.get_text()) == false, 'continuation detector should allow complete multiline and commands to execute')

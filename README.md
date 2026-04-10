@@ -70,7 +70,7 @@ The prompt stays a regular Neovim buffer. You can paste multiline commands, use 
 
 Default prompt keys:
 
-- `<CR>` runs the command. In insert mode, if the command is syntactically incomplete for the current shell, it inserts a newline instead.
+- `<CR>` runs the command. In insert mode, if the command is syntactically incomplete for the current shell, it inserts a newline instead. In normal mode, incomplete commands are not executed and a warning is shown.
 - `<Up>` and `<Down>` browse history
 - `<C-f>` searches history with `fzf-lua`
 - `<C-e>` accepts the ghost text suggestion

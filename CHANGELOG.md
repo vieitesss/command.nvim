@@ -13,6 +13,9 @@ Before `1.0.0`, breaking changes increment the minor version.
 ### Changed
 - Prompt history search now keeps multiline entries selectable by flattening them only for picker display.
 
+### Fixed
+- Normal-mode `<CR>` now warns instead of trying to execute syntactically incomplete commands.
+
 ## [0.1.1] - 2026-04-02
 
 ### Fixed

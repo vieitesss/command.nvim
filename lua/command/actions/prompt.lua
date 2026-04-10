@@ -170,6 +170,12 @@ function M.enter()
     end
 
     local cmd = prompt.get_text()
+
+    if command_needs_continuation(cmd) then
+        notify.warn('Command is incomplete and cannot be executed in normal mode')
+        return
+    end
+
     ghost_text.clear(window.buf)
 
     local ran = executor.run(cmd, {

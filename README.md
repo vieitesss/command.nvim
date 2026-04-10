@@ -25,7 +25,10 @@ Run shell commands inside Neovim, keep a searchable history, and navigate termin
 
 ```lua
 vim.pack.add({
-  { src = 'https://github.com/vieitesss/command.nvim' },
+  {
+    src = 'https://github.com/vieitesss/command.nvim',
+    version = vim.version.range('*'), -- latest tagged release
+  },
 })
 
 require('command').setup()

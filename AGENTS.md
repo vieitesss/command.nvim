@@ -1,6 +1,12 @@
 This is a Neovim plugin for running shell commands inside Neovim, with history, context expansion, validation warnings, terminal recovery, and quickfix integration.
 
-Release workflow:
+## Rules
+
+- Use the `:help` command to search built-in functions that can help you develop the plugin. Be always up to date regarding the used functions, do not use deprecated functions.
+- Check anything new in the current Neovim version when you are asked for it. There could be something new implemented inside the editorto use within the plugin.
+
+## Release workflow
+
 - Use Semantic Versioning tags in the form `vX.Y.Z`.
 - Keep new release notes in `CHANGELOG.md` under `## [Unreleased]` until the release is cut.
 - Treat the documented `require('command')` functions, `:Command*` commands, `<Plug>(Command*)` mappings, documented config keys, documented `command.actions.*` modules, and history compatibility as the public API.

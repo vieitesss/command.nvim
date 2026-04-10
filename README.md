@@ -66,14 +66,18 @@ vim.keymap.set('n', '<M-r>', '<Plug>(CommandReopenTerminal)')
 
 ## Prompt
 
+The prompt stays a regular Neovim buffer. You can paste multiline commands, use normal-mode edits like `o` and `O`, and the floating window grows with the command up to `ui.prompt.max_height`.
+
 Default prompt keys:
 
-- `<CR>` runs the command
+- `<CR>` runs the command. In insert mode, if the command is syntactically incomplete for the current shell, it inserts a newline instead. In normal mode, incomplete commands are not executed and a warning is shown.
 - `<Up>` and `<Down>` browse history
 - `<C-f>` searches history with `fzf-lua`
 - `<C-e>` accepts the ghost text suggestion
 - `<C-o>` toggles the execution directory
 - `<Esc>` cancels in normal mode
+
+When the command spans multiple lines, the prompt expands to show at least 5 lines when space allows.
 
 The prompt title shows the directory that will be used for execution. `<C-o>` switches between:
 
@@ -154,6 +158,7 @@ require('command').setup({
   ui = {
     prompt = {
       max_width = 40,
+      max_height = 10,
       ghost_text = true,
     },
     terminal = {
@@ -173,11 +178,12 @@ require('command').setup({
         { '<Up>', prompt.prev_history },
         { '<Down>', prompt.next_history },
         { '<C-f>', prompt.search_history },
-        { '<CR>', prompt.enter },
+        { '<CR>', prompt.enter_insert },
         { '<C-e>', prompt.accept_ghost },
         { '<C-o>', prompt.toggle_cwd },
       },
       n = {
+        { '<CR>', prompt.enter },
         { '<Esc>', prompt.cancel },
       },
     },
@@ -200,6 +206,7 @@ Option reference:
 | `history.picker` | `'fzf-lua'` | History picker used by `<C-f>`. Only `fzf-lua` is supported |
 | `history.file_path` | `stdpath('data') .. '/command_history.json'` | Optional custom path for persisted history |
 | `ui.prompt.max_width` | `40` | Base width used for the centered prompt window |
+| `ui.prompt.max_height` | `10` | Maximum height used for the centered prompt window. Multiline commands expand up to this limit |
 | `ui.prompt.ghost_text` | `true` | Show inline history suggestions while typing |
 | `ui.terminal.height` | `0.25` | Size of the terminal split |
 | `ui.terminal.split` | `'below'` | Where the terminal opens: `below`, `above`, `left`, or `right` |

@@ -139,6 +139,23 @@ local function apply_layout(window)
     vim.api.nvim_set_option_value('wrap', false, { win = window.win })
 end
 
+---@param window CommandPromptWindow
+---@param position integer[]
+local function align_view_to_cursor(window, position)
+    if not window or not window.win or not vim.api.nvim_win_is_valid(window.win) then
+        return
+    end
+
+    vim.api.nvim_win_call(window.win, function()
+        local view = vim.fn.winsaveview()
+        local topline = math.max(position[1] - (window.opts.height or PROMPT_HEIGHT) + 1, 1)
+        if view.topline ~= topline then
+            view.topline = topline
+            pcall(vim.fn.winrestview, view)
+        end
+    end)
+end
+
 ---@param buf integer
 local function attach_layout_autocmds(buf)
     local group = vim.api.nvim_create_augroup('command_prompt_layout_' .. buf, { clear = true })
@@ -286,7 +303,13 @@ function M.update_title()
 end
 
 function M.refresh_layout()
-    apply_layout(M.get())
+    local window = M.get()
+    if not window or not window.win or not vim.api.nvim_win_is_valid(window.win) then
+        return
+    end
+
+    apply_layout(window)
+    align_view_to_cursor(window, vim.api.nvim_win_get_cursor(window.win))
 end
 
 ---@param position integer[]
@@ -297,15 +320,7 @@ function M.set_cursor(position)
     end
 
     vim.api.nvim_win_set_cursor(window.win, position)
-
-    vim.api.nvim_win_call(window.win, function()
-        local view = vim.fn.winsaveview()
-        local max_topline = math.max(position[1] - (window.opts.height or PROMPT_HEIGHT) + 1, 1)
-        if view.topline > max_topline then
-            view.topline = max_topline
-            pcall(vim.fn.winrestview, view)
-        end
-    end)
+    align_view_to_cursor(window, position)
 end
 
 function M.close()

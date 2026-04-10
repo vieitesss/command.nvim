@@ -88,6 +88,28 @@ local tall_command = table.concat({ '1', '2', '3', '4', '5', '6', '7', '8', '9' 
 prompt.set_text(tall_command)
 assert(prompt.get().opts.height == 8, 'multiline prompt should respect max_height')
 
+local pasted_command = table.concat({
+    'dagger call fixture-image \\',
+    '  --docker-socket /var/run/docker.sock \\',
+    '  --kind-svc tcp://localhost:3000 \\',
+    '  --include-storage \\',
+    '  export --path ./cluster-with-storage.svg',
+    '',
+}, '\n')
+prompt.set_text(pasted_command)
+local pasted_window = assert(prompt.get(), 'prompt window missing after paste')
+vim.api.nvim_win_call(pasted_window.win, function()
+    local view = vim.fn.winsaveview()
+    view.topline = 6
+    pcall(vim.fn.winrestview, view)
+end)
+prompt.refresh_layout()
+local pasted_view = vim.api.nvim_win_call(pasted_window.win, function()
+    return vim.fn.winsaveview()
+end)
+assert(prompt.get().opts.height == 6, 'pasted multiline command should grow to fit visible lines')
+assert(pasted_view.topline == 1, 'layout refresh should keep pasted command visible above the cursor line')
+
 assert(prompt._calculate_height({ 'a' }, 8) == 1, 'single-line command should keep height 1')
 assert(prompt._calculate_height({ 'a', 'b' }, 8) == 5, 'two lines should expand to minimum visible height')
 assert(prompt._calculate_height({ '1', '2', '3', '4', '5', '6', '7', '8', '9' }, 8) == 8, 'height should clamp to max_height')

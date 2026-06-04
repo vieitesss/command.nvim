@@ -7,6 +7,8 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-05
+
 ### Fixed
 - Buffer CWD mode now falls back to Neovim's current working directory for non-file buffers.
 

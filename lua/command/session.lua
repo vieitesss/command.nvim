@@ -87,11 +87,18 @@ end
 ---@return string
 function M.get_resolved_cwd(context)
     if M._cwd_mode == 'buffer' and context and context.buf then
-        local file = vim.api.nvim_buf_get_name(context.buf)
-        if file ~= '' then
-            local dir = vim.fn.fnamemodify(file, ':h')
-            if vim.fn.isdirectory(dir) == 1 then
-                return dir
+        local buf = context.buf
+        if buf == 0 then
+            buf = vim.api.nvim_get_current_buf()
+        end
+
+        if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_get_option_value('buftype', { buf = buf }) == '' then
+            local file = vim.api.nvim_buf_get_name(buf)
+            if file ~= '' then
+                local dir = vim.fn.fnamemodify(file, ':h')
+                if vim.fn.isdirectory(dir) == 1 then
+                    return dir
+                end
             end
         end
     end

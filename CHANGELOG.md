@@ -7,6 +7,9 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+### Fixed
+- Buffer CWD mode now falls back to Neovim's current working directory for non-file buffers.
+
 ## [0.2.0] - 2026-04-10
 
 - If you are upgrading, check the README again and update your plugin manager configuration if needed. In particular, prefer a tagged release selector instead of tracking `main` directly, such as `version = '*'` in `lazy.nvim` or `version = vim.version.range('*')` in `vim.pack`.

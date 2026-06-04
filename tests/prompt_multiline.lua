@@ -40,13 +40,19 @@ assert(prompt.get().opts.height == 5, 'multiline prompt should expand to minimum
 
 prompt.set_text('echo \\')
 prompt_actions.enter_insert()
-assert(prompt.get_text() == table.concat({ 'echo \\', '' }, '\n'), 'insert enter should continue lines ending in backslash')
+assert(
+    prompt.get_text() == table.concat({ 'echo \\', '' }, '\n'),
+    'insert enter should continue lines ending in backslash'
+)
 assert(prompt.get().opts.height == 5, 'continuation newline should keep multiline height rules')
 assert(vim.fn.winsaveview().topline == 1, 'continuation newline should keep the first line visible')
 
 prompt.set_text('echo hi &&')
 prompt_actions.enter_insert()
-assert(prompt.get_text() == table.concat({ 'echo hi &&', '' }, '\n'), 'insert enter should continue after trailing and operator')
+assert(
+    prompt.get_text() == table.concat({ 'echo hi &&', '' }, '\n'),
+    'insert enter should continue after trailing and operator'
+)
 
 local original_notify = vim.notify
 local original_run = executor.run
@@ -67,22 +73,40 @@ prompt_actions.enter()
 assert(prompt.get_text() == 'echo hi &&', 'normal enter should keep incomplete command unchanged')
 assert(run_calls == 0, 'normal enter should not execute incomplete commands')
 assert(#notifications > 0, 'normal enter should warn for incomplete commands')
-assert(notifications[#notifications].msg:find('Command is incomplete and cannot be executed in normal mode', 1, true) ~= nil,
-    'normal enter should explain why the command was not executed')
+assert(
+    notifications[#notifications].msg:find('Command is incomplete and cannot be executed in normal mode', 1, true)
+        ~= nil,
+    'normal enter should explain why the command was not executed'
+)
 
 vim.notify = original_notify
 executor.run = original_run
 
 prompt.set_text(table.concat({ 'echo hola &&', 'echo adios' }, '\n'))
-assert(prompt_actions._command_needs_continuation(prompt.get_text()) == false, 'continuation detector should allow complete multiline and commands to execute')
+assert(
+    prompt_actions._command_needs_continuation(prompt.get_text()) == false,
+    'continuation detector should allow complete multiline and commands to execute'
+)
 
 prompt.set_text('echo "unterminated')
 prompt_actions.enter_insert()
-assert(prompt.get_text() == table.concat({ 'echo "unterminated', '' }, '\n'), 'insert enter should continue open quotes')
+assert(
+    prompt.get_text() == table.concat({ 'echo "unterminated', '' }, '\n'),
+    'insert enter should continue open quotes'
+)
 
-assert(prompt_actions._command_needs_continuation('echo hi &&') == true, 'continuation detector should match trailing and operator')
-assert(prompt_actions._command_needs_continuation('echo "unterminated') == true, 'continuation detector should match open quotes')
-assert(prompt_actions._command_needs_continuation('echo hi') == false, 'continuation detector should reject complete commands')
+assert(
+    prompt_actions._command_needs_continuation('echo hi &&') == true,
+    'continuation detector should match trailing and operator'
+)
+assert(
+    prompt_actions._command_needs_continuation('echo "unterminated') == true,
+    'continuation detector should match open quotes'
+)
+assert(
+    prompt_actions._command_needs_continuation('echo hi') == false,
+    'continuation detector should reject complete commands'
+)
 
 local tall_command = table.concat({ '1', '2', '3', '4', '5', '6', '7', '8', '9' }, '\n')
 prompt.set_text(tall_command)
@@ -112,13 +136,19 @@ assert(pasted_view.topline == 1, 'layout refresh should keep pasted command visi
 
 assert(prompt._calculate_height({ 'a' }, 8) == 1, 'single-line command should keep height 1')
 assert(prompt._calculate_height({ 'a', 'b' }, 8) == 5, 'two lines should expand to minimum visible height')
-assert(prompt._calculate_height({ '1', '2', '3', '4', '5', '6', '7', '8', '9' }, 8) == 8, 'height should clamp to max_height')
+assert(
+    prompt._calculate_height({ '1', '2', '3', '4', '5', '6', '7', '8', '9' }, 8) == 8,
+    'height should clamp to max_height'
+)
 
 local entries, commands_by_id = picker._build_entries({ 'echo hello', multiline })
 assert(#entries == 2, 'expected encoded history entries')
 assert(entries[1]:match('^1\t') ~= nil, 'expected picker entry id prefix')
 assert(entries[1]:find(' \\n ', 1, true) ~= nil, 'expected multiline display marker')
-assert(picker._resolve_selected_command(entries[1], commands_by_id) == multiline, 'expected picker selection to restore multiline command')
+assert(
+    picker._resolve_selected_command(entries[1], commands_by_id) == multiline,
+    'expected picker selection to restore multiline command'
+)
 
 prompt.close()
 session.cleanup(true)

@@ -198,7 +198,8 @@ function M.parse_line(line)
     end
 
     -- Fallback to simple pattern: file:line:col or file:line
-    local file, lnum, col = line:match('^([%w%./\\%-_]+):(%d+):?(%d*)')
+    local location = line:match('^%s*%-%->%s+(.+)$') or line
+    local file, lnum, col = location:match('^([%w%./\\%-_]+):(%d+):?(%d*)')
     if file and lnum then
         return {
             file = file,

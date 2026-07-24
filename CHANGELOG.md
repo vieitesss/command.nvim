@@ -7,6 +7,9 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+### Fixed
+- Rust compiler source locations are now jumpable from terminal output and quickfix.
+
 ## [0.2.1] - 2026-06-05
 
 ### Fixed

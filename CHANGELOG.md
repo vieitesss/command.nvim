@@ -7,6 +7,8 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-25
+
 ### Added
 - `:CommandCycleTerminalSide` and `<Plug>(CommandCycleTerminalSide)` cycle the terminal split side (`up -> right -> down -> left`) and report the new side.
 

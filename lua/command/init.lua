@@ -54,6 +54,12 @@ function M.reopen_terminal()
     return api.reopen_terminal()
 end
 
+---Cycle the terminal split side: up -> right -> down -> left
+function M.cycle_terminal_side()
+    ensure_init()
+    return api.cycle_terminal_side()
+end
+
 ---Teardown and reset the plugin state
 function M.teardown()
     if not M._initialized then

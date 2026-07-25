@@ -8,7 +8,7 @@
 ---@field ghost_text boolean Enable ghost text suggestions (default: true)
 
 ---@class CommandConfigTerminalOpts
----@field height number Terminal height as fraction of screen (default: 0.25)
+---@field height number Terminal height as fraction of screen (default: 0.4)
 ---@field split string Split direction: 'below'|'above'|'left'|'right' (default: 'below')
 
 ---@class CommandConfigUIOptions
@@ -49,7 +49,7 @@ local defaults = {
             ghost_text = true,
         },
         terminal = {
-            height = 0.25,
+            height = 0.4,
             split = 'below',
         },
     },

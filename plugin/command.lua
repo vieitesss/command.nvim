@@ -43,6 +43,13 @@ vim.keymap.set({ 'n', 'i' }, '<Plug>(CommandReopenTerminal)', function()
     end
 end, { desc = 'Reopen last terminal' })
 
+vim.keymap.set({ 'n', 'i' }, '<Plug>(CommandCycleTerminalSide)', function()
+    local command = load_command()
+    if command then
+        command.cycle_terminal_side()
+    end
+end, { desc = 'Cycle terminal split side' })
+
 -- Create user commands (lazy-loaded)
 vim.api.nvim_create_user_command('CommandExecute', function()
     local command = load_command()
@@ -69,5 +76,12 @@ vim.api.nvim_create_user_command('CommandReopenTerminal', function()
     local command = load_command()
     if command then
         command.reopen_terminal()
+    end
+end, {})
+
+vim.api.nvim_create_user_command('CommandCycleTerminalSide', function()
+    local command = load_command()
+    if command then
+        command.cycle_terminal_side()
     end
 end, {})

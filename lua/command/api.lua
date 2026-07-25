@@ -78,4 +78,9 @@ function M.reopen_terminal()
     end
 end
 
+function M.cycle_terminal_side()
+    local side = terminal.cycle_side(terminal_actions)
+    notify.info('Terminal side: ' .. side)
+end
+
 return M

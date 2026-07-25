@@ -57,6 +57,7 @@ Use `:checkhealth command.nvim` if you want to verify your shell, history storag
 - `:CommandExecuteLast` re-runs the last command after one has already been executed in the current Neovim session
 - `:CommandExecuteSelection` runs the current visual selection as a shell command
 - `:CommandReopenTerminal` reopens the last hidden terminal window if its buffer is still available
+- `:CommandCycleTerminalSide` cycles the terminal split side (`up -> right -> down -> left`) and shows the new side
 
 It also exposes `<Plug>` mappings if you want your own keys:
 
@@ -65,6 +66,7 @@ vim.keymap.set({ 'n', 'i' }, '<M-;>', '<Plug>(CommandExecute)')
 vim.keymap.set({ 'n', 'i' }, '<M-l>', '<Plug>(CommandExecuteLast)')
 vim.keymap.set('x', '<M-;>', '<Plug>(CommandExecuteSelection)')
 vim.keymap.set('n', '<M-r>', '<Plug>(CommandReopenTerminal)')
+vim.keymap.set('n', '<M-s>', '<Plug>(CommandCycleTerminalSide)')
 ```
 
 ## Prompt
@@ -165,7 +167,7 @@ require('command').setup({
       ghost_text = true,
     },
     terminal = {
-      height = 0.25,
+      height = 0.4,
       split = 'below',
     },
   },
@@ -211,7 +213,7 @@ Option reference:
 | `ui.prompt.max_width` | `40` | Base width used for the centered prompt window |
 | `ui.prompt.max_height` | `10` | Maximum height used for the centered prompt window. Multiline commands expand up to this limit |
 | `ui.prompt.ghost_text` | `true` | Show inline history suggestions while typing |
-| `ui.terminal.height` | `0.25` | Size of the terminal split |
+| `ui.terminal.height` | `0.4` | Size of the terminal split as a fraction of screen lines (below/above) or columns (left/right) |
 | `ui.terminal.split` | `'below'` | Where the terminal opens: `below`, `above`, `left`, or `right` |
 | `execution.cwd` | `'buffer'` | `buffer` uses the current file directory, `root` uses Neovim's current working directory |
 | `validation.warn` | `true` | Ask for confirmation before executing risky commands |

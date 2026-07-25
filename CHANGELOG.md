@@ -7,6 +7,12 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+### Added
+- `:CommandCycleTerminalSide` and `<Plug>(CommandCycleTerminalSide)` cycle the terminal split side (`up -> right -> down -> left`) and report the new side.
+
+### Changed
+- Terminal splits now default to 40% of the screen on every side (`up`/`down`/`left`/`right`), and `left`/`right` splits size against columns instead of lines.
+
 ### Fixed
 - Rust compiler source locations are now jumpable from terminal output and quickfix.
 

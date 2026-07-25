@@ -20,6 +20,7 @@ local session = require('command.session')
 ---@field hide fun()
 ---@field close fun()
 ---@field reopen fun(actions: table): CommandTerminalWindow|nil
+---@field cycle_side fun(actions: table): string
 ---@field send_command fun(cmd: string, context: ExecutionContext|nil): boolean
 ---@field get_lines fun(): string[]
 ---@field get_current_line fun(): string|nil
@@ -29,15 +30,18 @@ local M = {}
 
 local WINDOW_NAME = 'terminal'
 
-local SIDE_SPLIT_RATIO = 0.4
+local DEFAULT_SPLIT_RATIO = 0.4
+
+-- Cycle order: up -> right -> down -> left -> up
+local SIDE_ORDER = { 'above', 'right', 'below', 'left' }
+local SIDE_LABEL = { above = 'up', right = 'right', below = 'down', left = 'left' }
 
 ---@param opts CommandTerminalCreateOpts|CommandTerminalWindowOpts|nil
 ---@return integer, string
 local function resolve_layout(opts)
     local split = (opts and opts.split) or config.values.ui.terminal.split or 'below'
     local is_side_split = split == 'left' or split == 'right'
-    local height = (opts and opts.height) or (is_side_split and SIDE_SPLIT_RATIO)
-        or config.values.ui.terminal.height or 0.25
+    local height = (opts and opts.height) or config.values.ui.terminal.height or DEFAULT_SPLIT_RATIO
 
     if height < 1 then
         height = math.floor((is_side_split and vim.o.columns or vim.o.lines) * height)
@@ -250,6 +254,45 @@ function M.get_lines()
     end
 
     return vim.api.nvim_buf_get_lines(window.buf, 0, -1, false)
+end
+
+---@param actions table
+---@return string
+function M.cycle_side(actions)
+    local window = M.get()
+    local current = (window and window.opts and window.opts.split) or config.values.ui.terminal.split or 'below'
+
+    local current_idx = 1
+    for idx, side in ipairs(SIDE_ORDER) do
+        if side == current then
+            current_idx = idx
+            break
+        end
+    end
+
+    local next_split = SIDE_ORDER[(current_idx % #SIDE_ORDER) + 1]
+    config.values.ui.terminal.split = next_split
+
+    if window and window.win and vim.api.nvim_win_is_valid(window.win) and window.buf and vim.api.nvim_buf_is_valid(window.buf) then
+        pcall(vim.api.nvim_win_close, window.win, true)
+
+        window.opts = window.opts or {}
+        window.opts.split = next_split
+        window.opts.height = nil
+
+        local win, height, split = open_window(window.buf, window.opts)
+        if win and vim.api.nvim_win_is_valid(win) then
+            window.win = win
+            window.opts.height = height
+            window.opts.split = split
+            session.register_window(window)
+            attach_default_keymaps(window.buf, actions)
+        else
+            window.win = nil
+        end
+    end
+
+    return SIDE_LABEL[next_split] or next_split
 end
 
 ---@return string|nil

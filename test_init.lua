@@ -53,7 +53,7 @@ require('command').setup({
             ghost_text = true,
         },
         terminal = {
-            height = 0.25,
+            height = 0.4,
             split = 'below',
         },
     },

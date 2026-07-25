@@ -29,14 +29,18 @@ local M = {}
 
 local WINDOW_NAME = 'terminal'
 
+local SIDE_SPLIT_RATIO = 0.4
+
 ---@param opts CommandTerminalCreateOpts|CommandTerminalWindowOpts|nil
 ---@return integer, string
 local function resolve_layout(opts)
-    local height = (opts and opts.height) or config.values.ui.terminal.height or 0.25
     local split = (opts and opts.split) or config.values.ui.terminal.split or 'below'
+    local is_side_split = split == 'left' or split == 'right'
+    local height = (opts and opts.height) or (is_side_split and SIDE_SPLIT_RATIO)
+        or config.values.ui.terminal.height or 0.25
 
     if height < 1 then
-        height = math.floor(vim.o.lines * height)
+        height = math.floor((is_side_split and vim.o.columns or vim.o.lines) * height)
     end
 
     height = math.max(height, 3)

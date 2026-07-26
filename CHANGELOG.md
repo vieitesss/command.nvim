@@ -7,6 +7,9 @@ Before `1.0.0`, breaking changes increment the minor version.
 
 ## [Unreleased]
 
+### Added
+- `Q` closes the command terminal and stops its running command, while `q` continues to hide it for reopening.
+
 ## [0.3.0] - 2026-07-25
 
 ### Added

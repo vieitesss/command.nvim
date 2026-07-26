@@ -94,10 +94,11 @@ The prompt title shows the directory that will be used for execution. `<C-o>` sw
 Default terminal keys:
 
 - `q` hides the terminal
+- `Q` closes the terminal and stops its running command
 - `<CR>` opens the file or error under the cursor
 - `<C-q>` sends the full output to quickfix
 
-`q` hides the window instead of deleting it, so `:CommandReopenTerminal` can bring it back. The saved terminal is replaced the next time you run a new command.
+`q` hides the window instead of deleting it, so `:CommandReopenTerminal` can bring it back. `Q` closes it permanently and stops any running command. The saved terminal is replaced the next time you run a new command.
 
 When you send output to quickfix, the window keeps the original command output text. File paths and error lines are still parsed into jumpable quickfix entries, while non-matching lines stay as plain text rows.
 
@@ -197,6 +198,7 @@ require('command').setup({
         { '<CR>', terminal.follow_error },
         { '<C-q>', terminal.send_to_quickfix },
         { 'q', terminal.hide },
+        { 'Q', terminal.close },
       },
     },
   },

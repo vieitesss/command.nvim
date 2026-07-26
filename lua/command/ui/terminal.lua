@@ -94,6 +94,7 @@ local function attach_default_keymaps(buf, actions)
         vim.keymap.set('n', '<CR>', actions.follow_error, opts)
         vim.keymap.set('n', '<C-q>', actions.send_to_quickfix, opts)
         vim.keymap.set('n', 'q', actions.hide or actions.close, opts)
+        vim.keymap.set('n', 'Q', actions.close, opts)
     end
 
     vim.keymap.set('t', '<C-q>', actions.send_to_quickfix, opts)

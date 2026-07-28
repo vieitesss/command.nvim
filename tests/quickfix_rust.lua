@@ -1,13 +1,13 @@
 vim.opt.runtimepath:prepend('.')
 
 local parser = require('command.quickfix.parser')
-local error_info = parser.parse_line(' --> src/tui/mod.rs:6:29')
+local error_info = parser.parse_line(' --> src/tui/sessions_list.rs:3:5')
 
 assert(
     vim.deep_equal(error_info, {
-        file = 'src/tui/mod.rs',
-        line = 6,
-        col = 29,
+        file = 'src/tui/sessions_list.rs',
+        line = 3,
+        col = 5,
     }),
     'Rust compiler locations should be jumpable'
 )

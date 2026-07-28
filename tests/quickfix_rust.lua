@@ -11,3 +11,12 @@ assert(
     }),
     'Rust compiler locations should be jumpable'
 )
+
+assert(
+    vim.deep_equal(parser.parse_line(' --> src/tui/sessions_list.rs'), {
+        file = 'src/tui/sessions_list.rs',
+        line = 1,
+        col = 0,
+    }),
+    'Rust compiler paths should not include the arrow'
+)

@@ -198,13 +198,22 @@ function M.parse_line(line)
     end
 
     -- Fallback to simple pattern: file:line:col or file:line
-    local location = line:match('^%s*%-%->%s+(.+)$') or line
+    local rust_location = line:match('^%s*%-%->%s+(.+)$')
+    local location = rust_location or line
     local file, lnum, col = location:match('^([%w%./\\%-_]+):(%d+):?(%d*)')
     if file and lnum then
         return {
             file = file,
             line = tonumber(lnum),
             col = (col and col ~= '' and tonumber(col)) or 0,
+        }
+    end
+
+    if rust_location and rust_location:match('^[%w%./\\%-_]+$') then
+        return {
+            file = rust_location,
+            line = 1,
+            col = 0,
         }
     end
 
